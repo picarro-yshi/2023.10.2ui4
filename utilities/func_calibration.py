@@ -5,7 +5,7 @@ import datetime
 import matplotlib.pyplot as plt
 
 jupyterpath = '../2023.10.1jupyter4/'
-sys.path.append(jupyterpath)  ## jupyternotebook re-write
+sys.path.append(jupyterpath)
 import combo_other, combo, droplet_aq, droplet, tank
 
 from utilities import func_experiment

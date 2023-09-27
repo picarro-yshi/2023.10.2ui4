@@ -1,5 +1,6 @@
 ## other tab1 functions
 import socket
+import os
 
 BUFFER_SIZE = 1024
 
@@ -36,13 +37,12 @@ def get_measurement(self):
     w1 = s.recv(BUFFER_SIZE)
     w2 = w1.decode("utf-8")
     weight = round(float(w2[3:15]), 5)
-    self.weightLabel.setText(str(weight))
     return weight
 
 
 def scale_reading(self):
     self.graphWidget1.clear()
-    self.weightLabel.setText(' ')
+    self.weightLabel.setText('0.00000')
     self.ScaleRealTimeLabel.setText(' ')
 
     if detect_scale(self):
@@ -71,7 +71,7 @@ def scale_plot(self):
 
         weight = get_measurement(self)
         self.scale_y.append(weight)
-        self.ScaleRealTimeLabel.setText(weight)
+        self.ScaleRealTimeLabel.setText(str(weight))
         
         self.graphWidget1.plot(self.scale_x, self.scale_y, pen="k")
 
@@ -81,13 +81,15 @@ def scale_weigh(self):
     try:  # when animation is running, get from label
         w1 = self.ScaleRealTimeLabel.text()  ##string
         w2 = round(float(w1), 5)
-        self.weightLabel.setText(str(w3))
+        self.weightLabel.setText(str(w2))
         self.sampleWeightLineEdit.setText(str(w2))
     except:  # when no animation is not run
         print('measuring ...')
         self.weightLabel.setText(' ')
         if detect_scale(self):
-            get_measurement(self)
+            weight = get_measurement(self)
+            self.weightLabel.setText(str(weight))
+            self.sampleWeightLineEdit.setText(str(weight))
 
 
 

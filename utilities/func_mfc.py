@@ -2,6 +2,7 @@
 import socket
 from queue import Queue
 import time
+import os
 
 from Listener_py3 import Listener
 import StringPickler_py3 as StringPickler
@@ -18,7 +19,7 @@ def set_mfc_1slpm(self):
         if F1 > 1 or F1 < 0:
             self.tab1ExperimentHint.setText('! Error: Input a value between 0-1.\n')
         else:
-            port_mfc = self.alicatPortLineEdit.text()
+            port_mfc = self.mfcPortCombobox.currentText()
             adr1 = self.MFC1AddressLineEdit.text()
             flow_controller1 = FlowController(port=port_mfc, address=adr1)
             flow_controller1.set_flow_rate(flow=F1)
@@ -33,7 +34,7 @@ def set_mfc_100sccm(self):
         if F2 > 100 or F2 < 0:
             self.tab1ExperimentHint.setText('! Error: Input a value between 0-100.\n')
         else:
-            port_mfc = self.alicatPortLineEdit.text()
+            port_mfc = self.mfcPortCombobox.currentText()
             adr1 = self.MFC1AddressLineEdit.text()
             adr2 = self.MFC2largeAddressLineEdit.text()
             F1 = 1 - F2 / 1000  # dilution
@@ -53,7 +54,7 @@ def set_mfc_10sccm(self):
         if F2 > 10 or F2 < 0:
             self.tab1ExperimentHint.setText('! Error: Input a value between 0-10.\n')
         else:
-            port_mfc = self.alicatPortLineEdit.text()
+            port_mfc = self.mfcPortCombobox.currentText()
             adr1 = self.MFC1AddressLineEdit.text()
             adr2 = self.MFC2smallAddressLineEdit.text()
             F1 = 1 - F2 / 1000  # dilution
@@ -89,7 +90,7 @@ def choose_10sccm(self):
 
 def stop_flow(self):
     try:
-        port_mfc = self.alicatPortLineEdit.text()
+        port_mfc = self.mfcPortCombobox.currentText()
         adr1 = self.MFC1AddressLineEdit.text()
         adr2large = self.MFC2largeAddressLineEdit.text()
         adr2small = self.MFC2smallAddressLineEdit.text()
@@ -110,7 +111,7 @@ def stop_flow(self):
 
 def send_MFC_data(self):
     try:
-        mfc_port = self.alicatPortLineEdit.text()
+        port_mfc = self.mfcPortCombobox.currentText()
         mfc_address1 = self.MFC1AddressLineEdit.text()
         if self.mfc100RadioButton.isChecked():
             mfc_address2 = self.MFC2largeAddressLineEdit.text()
@@ -119,8 +120,8 @@ def send_MFC_data(self):
             mfc_address2 = self.MFC2smallAddressLineEdit.text()
             self.mfc2_refresh_label = self.tab1MFC10Label
     
-        self.flow_controller1 = FlowController(port=mfc_port, address=mfc_address1)
-        self.flow_controller2 = FlowController(port=mfc_port, address=mfc_address2)
+        self.flow_controller1 = FlowController(port=port_mfc, address=mfc_address1)
+        self.flow_controller2 = FlowController(port=port_mfc, address=mfc_address2)
     
         host = self.analyzerIPLineEdit.text()
         self.analyzer_ip = 'http://' + host
@@ -181,7 +182,7 @@ def stop_send_MFC_data(self):
 
 def detect_mfc(self, adr):
     try:
-        port_mfc = self.alicatPortLineEdit.text()
+        port_mfc = self.mfcPortCombobox.currentText()
         fc = FlowController(port=port_mfc, address=adr)
         print(fc.get())
 

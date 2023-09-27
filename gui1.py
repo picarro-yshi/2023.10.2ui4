@@ -5,9 +5,9 @@
 PORT_IN = 50070  ## backdoor, send data to fitter on analyzer
 PORT_OUT = 40060  ## listener, get data from analyzer
 ANALYZER_SRC = 'analyze_VOC_broadband'  ## listener data key
-MFC_REFRESH_TIME = 2000  ## ms
-PLOT_REFRESH_TIME = 3000  ## ms
-DATA_RECEIVE_TIME = 1000  ## ms
+MFC_REFRESH_TIME = 2000  # ms
+PLOT_REFRESH_TIME = 2000  # ms
+DATA_RECEIVE_TIME = 1000  # ms
 
 # ------------
 

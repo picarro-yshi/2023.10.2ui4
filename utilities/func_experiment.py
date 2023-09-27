@@ -2,6 +2,8 @@
 import os
 import sys
 import time
+import numpy as np
+from PyQt6.QtWidgets import QMessageBox
 
 from utilities import func_analyzer, func_mfc
 
@@ -115,7 +117,7 @@ def datakey_check(self):
     self.datakey = "broadband_gasConcs_%s" % cid
     lib_value = 'broadband_eCompoundOutputs_' + cid + '_calibration'
     self.datakeyLabel.setText(self.datakey)
-    self.plotKeyLabel = QLabel("Data Key for Plot: broadband_gasConcs_%s" % cid)
+    self.plotKeyLabel.setText("Data Key for Plot: broadband_gasConcs_%s" % cid)
 
     dm_queue = Queue(180)  ## data manager
     listener = Listener(dm_queue, self.host, self.port_out, StringPickler.ArbitraryObject, retry=True)
@@ -125,11 +127,11 @@ def datakey_check(self):
         dm = dm_queue.get(timeout=5)
         if dm['source'] == self.analyzer_source:
             if 'time' not in dm['data']:
-                self.tab1ExperimentHint.setText("! Error: Missing datakey 'time'.\n")
+                self.tab1ExperimentHint.setText("! Error: Missing datakey 'time'.\nPlease try again.")
             elif self.datakey not in dm['data']:
-                self.tab1ExperimentHint.setText("! Error: Missing datakey '%s'.\n" % self.datakey)
+                self.tab1ExperimentHint.setText("! Error: Missing datakey '%s'.\nPlease try again" % self.datakey)
             elif lib_value not in dm['data']:
-                self.tab1ExperimentHint.setText("! Error: Missing datakey '%s'.\n" % lib_value)
+                self.tab1ExperimentHint.setText("! Error: Missing datakey '%s'.\nPlease try again" % lib_value)
             else:
                 tag = 1
                 # print(dm['data']['time'])
@@ -139,10 +141,10 @@ def datakey_check(self):
             if tag:
                 if self.dropletRadioButton.isChecked():  # check datakey: MFC1_flow, MFC2_flow
                     if 'MFC1_flow' not in dm['data']:
-                        self.tab1ExperimentHint.setText("! Error: Missing datakey dm['MFC1_flow'].\n")
+                        self.tab1ExperimentHint.setText("! Error: Missing datakey dm['MFC1_flow'].\nPlease try again")
                         tag = 0
                     elif 'MFC2_flow' not in dm['data']:
-                        self.tab1ExperimentHint.setText("! Error: Missing datakey dm['MFC2_flow'].\n")
+                        self.tab1ExperimentHint.setText("! Error: Missing datakey dm['MFC2_flow'].\nPlease try again")
                         tag = 0
 
         if tag:
@@ -160,11 +162,13 @@ def create_experiment(self):
         tag = func_analyzer.detect_analyzer_portin(self)
 
     if tag:
-        tag = func_analyzer.detect_analyzer_portout(self)
+        data_speed = func_analyzer.detect_analyzer_portout(self)
+        if data_speed:
+            print("analyzer port check passed, fitter data speed (s/pt): %s" % data_speed)
+            tag = 1
 
     # send MFC data to analyzer if not yet
     if tag:
-        print("analyzer port check passed")
         if self.dropletRadioButton.isChecked():
             if self.sendMFCButton.isEnabled():
                 func_mfc.send_MFC_data(self)
@@ -178,7 +182,8 @@ def create_experiment(self):
         print("all checks passed!")
         try:
             # data manager
-            self.timer_data.start()  # timer
+            self.timer_data.start()
+            print('data manager timer started')
 
             # start plot fresh
             self.graphWidget.clear()
@@ -212,14 +217,18 @@ def create_experiment(self):
             fnrp = os.path.join(self.experiment_path, 'par')
             os.mkdir(fnrp)
 
-            self.save_parameter_local()
-            self.save_parameter_R()
+            save_parameter_local(self)
+            save_parameter_R(self)
+            print('parameters saved')
 
             self.tab1CreateExpButton.setEnabled(False)
             self.expStartButton.setEnabled(True)
             self.startPlotButton.setEnabled(True)
+
+            start_day = self.expStartLineEdit.text()
+            suffix = self.expSuffix.text()
             self.tab1ExperimentHint.setText(
-                'Experiment %s created!\nYou may start the experiment now.' % (start_day + suffix))
+                "Experiment %s created!\nYou may press the start button now." % (start_day + suffix))
         except:
             self.tab1ExperimentHint.setText('Error creating experiment.\n')
 
@@ -249,7 +258,7 @@ def save_parameter_local(self):
             with open(p, 'w') as f:
                 f.write(self.sampleTankConcLineEdit.text())
     except:
-        print("Error loading parameters.")
+        print("Error saving parameters locally.")
 
 
 ## save parameters on R drive
@@ -342,7 +351,7 @@ def data_manager(self):
         listener = Listener(dm_queue, self.host, self.port_out, StringPickler.ArbitraryObject, retry=True)
         dm = dm_queue.get(timeout=5)
 
-        if dm['source'] == analyzer_source:
+        if dm['source'] == self.analyzer_source:
             if len(self.y) == window_points:  ## x-axis number
                 self.x.pop(0)
                 self.y.pop(0)
@@ -385,8 +394,9 @@ def start_plot(self):
 
 
 def stop_plot(self):
+    self.startPlotButton.setEnabled(True)
     self.stopPlotButton.setEnabled(False)
-    self.timer_plot.start()
+    self.timer_plot.stop()
 
 
 def plot_spectrum(self):
@@ -427,9 +437,12 @@ def plot_spectrum(self):
     # if self.xtick[0][0] < self.x[0]:
     #     self.xtick.pop(0)
 
-    self.graphWidget.plot(self.x, self.y, pen="b")
-    ax = self.graphWidget.getAxis("bottom")
-    ax.setTicks([self.tick])
+    try:
+        self.graphWidget.plot(self.x, self.y, pen="k")
+        ax = self.graphWidget.getAxis("bottom")
+        ax.setTicks([self.xtick])
+    except:
+        print("error plot")
 
 
 # start experiment, record time, no error check
@@ -463,15 +476,22 @@ def add_sample(self):
             note = 'Please wait at least 30 min,\nuntil %s:%s to add sample.\n' % (ep[9:11], ep[12:14])
             reply = QMessageBox.question(self, 'Warning', note, QMessageBox.StandardButton.Ok)
 
-        if dropletRadioButton.isChecked():
+        if self.dropletRadioButton.isChecked():
+            print("check weight")
             weight = self.sampleWeightLineEdit.text()
-            if weight == '':
+            if not weight:
                 note = 'Please type in sample weight!\n'
                 reply = QMessageBox.question(self, 'Warning', note, QMessageBox.StandardButton.Ok)
 
         ## get baseline 1:
-        self.zero1 = np.mean(self.baseline[:-20])
-        self.sigma1 = np.std(self.baseline[:-20])
+        try:
+            baseline_before = self.baseline[:-60]
+        except:  # cheater to waive the 30 min baseline requirement
+            baseline_before = self.baseline[:-5]
+
+        self.zero1 = np.mean(baseline_before)
+        self.sigma1 = np.std(baseline_before)
+
         print('zero1')
         print(self.zero1)
         print(self.sigma1)
@@ -482,16 +502,16 @@ def add_sample(self):
         t1 = time.strftime("%Y%m%d")
         t2 = time.strftime("%H")
         t3 = time.strftime("%M")
-        self.e74.setText(t1)  # '20211124'
-        self.e75.setCurrentText(t2)  # '08'
-        self.e76.setCurrentText(t3)  # '00'
-
-        save_parameter_R_time(self)
+        self.expAddLineEdit.setText(t1)  # '20211124'
+        self.expAddCombobox1.setCurrentText(t2)  # '08'
+        self.expAddCombobox2.setCurrentText(t3)  # '00'
 
         self.expAddButton.setEnabled(False)
         self.note1 = "⦿ Sample added at %s:%s! Please run until baseline is stable.\n" \
                      "Baseline before: %.4E" % (t2, t3, self.zero1)
         self.tab1ExperimentHint.setText(self.note1)
+
+        save_parameter_R_time(self)
     except:
         self.tab1ExperimentHint.setText('! Error record add sample time.\n\n')
 
@@ -509,8 +529,8 @@ def track_baseline1(self):
             t1 = time.strftime("%Y%m%d")
             t2 = time.strftime("%H")
             t3 = time.strftime("%M")
-            self.expEndLineEdit.setText(t1)
-            self.expEndCombobox1.setCurrentText(t2)  # as recommendation for user
+            self.expEndLineEdit.setText(t1)  # auto fill, as a message, baseline is low enough and experiment can stop
+            self.expEndCombobox1.setCurrentText(t2)
             self.expEndCombobox2.setCurrentText(t3)
 
             with open(fnrt, 'w') as f:
@@ -524,18 +544,41 @@ def track_baseline1(self):
 
 
 def end_exp(self):
+    # easy things first
+    if self.dropletRadioButton.isChecked():
+        fnrp = os.path.join(self.experiment_path, 'par')
+        p = os.path.join(fnrp, 'weight.txt')
+        with open(p, 'w') as f:
+            f.write(self.sampleWeightLineEdit.text())
+
+    # fill in end time
+    note = ''
+    if not self.expEndLineEdit.text():
+        note = 'Your baseline may still be higher than before experiment start.'
+
+    t1 = time.strftime("%Y%m%d")
+    t2 = time.strftime("%H")
+    t3 = time.strftime("%M")
+    self.expEndLineEdit.setText(t1)  ## '20211124'
+    self.expEndCombobox1.setCurrentText(t2)
+    self.expEndCombobox2.setCurrentText(t3)
+    self.tab1ExperimentHint.setText('Experiment ended at %s:%s.\n%s' % (t2, t3, note))
+
     # stop the plot
     if self.stopPlotButton.isEnabled():
-        self.stop_plot()
+        stop_plot(self)
+    self.startPlotButton.setEnabled(False)
 
     self.timer_baseline.stop()  # track baseline
     self.timer_data.stop()  # data manager
 
-    self.save_parameter_R()
-    self.save_parameter_R_time()
+    # enough time to get the most recent time in line_edit
+    save_parameter_R(self)
+    save_parameter_R_time(self)
 
     self.expEndButton.setEnabled(False)
     self.tab1CreateExpButton.setEnabled(True)
+
 
 
 if __name__ == "__main__":
