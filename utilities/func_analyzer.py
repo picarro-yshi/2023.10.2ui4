@@ -41,17 +41,17 @@ def detect_analyzer_portout(self):
             print(i, dm['source'])
             if dm['source'] == self.analyzer_source:
                 x.append(dm['time'])
-            if len(x) > 2:
+            if len(x) > 1:
                 interval = int(x[-1] - x[-2])
                 self.analyzerPortOutHintLabel.setText('\u2713')
                 break
             
         if not x:
             self.analyzerPortOutHintLabel.setText('\u2717')
-            self.tab1ExperimentHint.setText("Analyzer source '%s' not exist.\n"
+            self.tab1ExperimentHint.setText(" ! Error: Analyzer source '%s' not exist.\n"
                                             "Please try again." % self.analyzer_source)
     except:
-        self.tab1ExperimentHint.setText("Analyzer output port not ready.\n")
+        self.tab1ExperimentHint.setText(" ! Error: Analyzer output port not ready.\nPlease try again")
         self.analyzerPortOutHintLabel.setText('\u2717')
         
     # print("fitter data speed (s/pt)", interval)

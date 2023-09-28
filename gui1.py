@@ -340,14 +340,14 @@ class Window(QWidget):
         layout3.addLayout(layout5)
         layout3.addLayout(layout6)
 
-        button1 = QToolButton()
-        button1.setIcon(QIcon("icons/start1.png"))
-        button1.setIconSize(QSize(40, 40))
-        button1.setToolTip("Continuously measure and plot weight for a time")
-        button1.clicked.connect(lambda: func_scale.scale_reading(self))
+        self.scaleStartButton = QToolButton()
+        self.scaleStartButton.setIcon(QIcon("icons/start1.png"))
+        self.scaleStartButton.setIconSize(QSize(40, 40))
+        self.scaleStartButton.setToolTip("Continuously measure and plot weight for a time")
+        self.scaleStartButton.clicked.connect(lambda: func_scale.scale_reading(self))
         label5 = QLabel('   Start')
 
-        layout5.addWidget(button1)
+        layout5.addWidget(self.scaleStartButton)
         layout5.addWidget(label5)
 
         button2 = QToolButton()

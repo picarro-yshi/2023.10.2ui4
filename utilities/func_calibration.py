@@ -23,11 +23,11 @@ def load_experiment(self):
 
     tag = 0
     if not start_day:
-        self.tab1CalHintLabel.setText('! Error: Please fill in the date(and/or suffix).')
+        self.tab1CalHintLabel.setText(' ! Error: Please fill in date(+ suffix).')
     elif not os.path.isdir(r_drive):
-        self.tab1CalHintLabel.setText('! Error: R drive not found.')
+        self.tab1CalHintLabel.setText(' ! Error: R drive not found.')
     elif not os.path.isdir(fnrp):
-        self.tab1CalHintLabel.setText('! Error: parameters not found.')
+        self.tab1CalHintLabel.setText(' ! Error: parameters not found.')
     else:
         tag = 1
 
@@ -98,7 +98,7 @@ def load_experiment(self):
 
             self.tab1CalculateButton.setEnabled(True)
             self.PlotOneComboButton.setEnabled(True)
-            self.tab1CalHintLabel.setText('⦿ Parameters  loaded.')
+            self.tab1CalHintLabel.setText('• Experiment parameters loaded.')
         except:
             self.tab1CalHintLabel.setText(' ! Error loading experiment parameters.')
 
@@ -142,13 +142,13 @@ def calculation_check(self):
 
             if (epo1 >= epo2) or (epo2 >= epo3):
                 tag = 0
-                self.tab1CalHintLabel.setText("! Error, start time is after end time.")
+                self.tab1CalHintLabel.setText(" ! Error, start time is after end time.")
             else:
                 t1 = "%s%s%s" % (ta1, ta2, ta3)
                 t2 = "%s%s%s" % (tb1, tb2, tb3)
                 t3 = "%s%s%s" % (tc1, tc2, tc3)
         except:
-            self.tab1CalHintLabel.setText("! Error: invalid time.")
+            self.tab1CalHintLabel.setText(" ! Error: invalid time.")
             tag = 0
     return tag, t1, t2, t3
 
@@ -219,10 +219,10 @@ def calculate(self):
 
             f = open(os.path.join(self.experiment_path, 'par', 'calibration_factor.txt'), "r")
             cal = round(float(f.read()), 4)
-            self.tab1CalHintLabel.setText('⦿ Calibration factor is %s' % cal)
+            self.tab1CalHintLabel.setText('• Calibration factor is %s' % cal)
             self.tab1ClosePlotButton.setEnabled(True)
         except:
-            self.tab1CalHintLabel.setText('! Error calculation. Please run script to diagnose.')
+            self.tab1CalHintLabel.setText(' ! Error calculation. Please run script to diagnose.')
 
 
 def close_plot(self):
@@ -245,7 +245,7 @@ def plot_one_combo(self):
     combokey = self.combo_spectrum_key.currentText()
     note = combo_other.plot_combo(self.experiment_path, self.sample, combokey, row)
     if note:
-        self.tab1ComboHintLabel.setText('! Error: ' + note)
+        self.tab1ComboHintLabel.setText(' ! Error: ' + note)
 
 
 def combo_study(self):
@@ -287,7 +287,7 @@ def combo_study(self):
                              row1, row2, range1, range2, peak_pct, savefig=savefigure)
 
     if note:
-        self.tab1ComboHintLabel.setText('! Error: ' + note)
+        self.tab1ComboHintLabel.setText(' ! Error: ' + note)
     # self.stopPlotComboButton.setEnabled(False)
 
 

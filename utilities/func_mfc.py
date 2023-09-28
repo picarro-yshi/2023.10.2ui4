@@ -23,9 +23,9 @@ def set_mfc_1slpm(self):
             adr1 = self.MFC1AddressLineEdit.text()
             flow_controller1 = FlowController(port=port_mfc, address=adr1)
             flow_controller1.set_flow_rate(flow=F1)
-            self.mfcHintLabel.setText('⦿ Dilution line set to ' + str(F1))
+            self.mfcHintLabel.setText('• Dilution line set to ' + str(F1))
     except:
-        self.mfcHintLabel.setText('! Error: unable to set MFC1 flow rate.')
+        self.mfcHintLabel.setText('! Error: unable to set MFC1 flow.')
 
 
 def set_mfc_100sccm(self):
@@ -43,9 +43,9 @@ def set_mfc_100sccm(self):
             flow_controller1.set_flow_rate(flow=F1)
             flow_controller2.set_flow_rate(flow=F2)
             self.tab1MFC1LineEdit.setText(str(F1))
-            self.mfcHintLabel.setText('⦿ Bubble line set to ' + str(F2))
+            self.mfcHintLabel.setText('• Bubble line set to ' + str(F2))
     except:
-        self.mfcHintLabel.setText('! Error: Unable to set MFC2 flow rate.')
+        self.mfcHintLabel.setText('! Error: Unable to set MFC2 flow.')
 
 
 def set_mfc_10sccm(self):
@@ -63,9 +63,9 @@ def set_mfc_10sccm(self):
             flow_controller1.set_flow_rate(flow=F1)
             flow_controller2.set_flow_rate(flow=F2)
             self.tab1MFC1LineEdit.setText(str(F1))
-            self.mfcHintLabel.setText('⦿ Bubble line set to ' + str(F2))
+            self.mfcHintLabel.setText('• Bubble line set to ' + str(F2))
     except:
-        self.mfcHintLabel.setText('! Error: Unable to set MFC2 flow rate.')
+        self.mfcHintLabel.setText('! Error: Unable to set MFC2 flow.')
 
 
 def choose_100sccm(self):
@@ -104,7 +104,7 @@ def stop_flow(self):
 
         # self.tab1MFC100Combobox.setCurrentText("0")
         # self.tab1MFC10Combobox.setCurrentText("0")
-        self.mfcHintLabel.setText('⦿ MFC2 Bubble line stopped.')
+        self.mfcHintLabel.setText('• MFC2 Bubble line stopped.')
     except:
         self.mfcHintLabel.setText('! Error: Unable to stop the flow.')
 
@@ -130,7 +130,7 @@ def send_MFC_data(self):
         self.sendMFCButton.setEnabled(False)
         self.stopSendMFCButton.setEnabled(True)
     except:
-        self.tab1ExperimentHint.setText("! Error sending MFC data to analyzer.\n")
+        self.tab1ExperimentHint.setText(" ! Error sending MFC data to analyzer.\n")
 
 
 def sendMFC(self):
@@ -159,9 +159,9 @@ def sendMFC(self):
         MeasSystem.Backdoor.SetData(datakey2, b)
         MeasSystem.Backdoor.SetData('MFC2_P_amb', c)
         MeasSystem.Backdoor.SetData('MFC2_T_amb', d)
-        self.tab1Layout1Hint.setText("MFC data sent to analyzer.")
+        self.tab1Layout1Hint.setText("• MFC data sent to analyzer.")
     except:
-        self.tab1Layout1Hint.setText("! Error sending MFC data sent to analyzer.")
+        self.tab1Layout1Hint.setText(" ! Error sending MFC data sent to analyzer.")
         print('MFC data to analyzer error detected: ', time.ctime())
 
     # refresh

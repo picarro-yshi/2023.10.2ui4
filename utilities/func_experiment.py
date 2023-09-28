@@ -68,17 +68,17 @@ def input_check(self):
     # check GUI input field
     tag = 0
     if r_drive == '':
-        self.tab1ExperimentHint.setText('Please type in R drive location.\n')
+        self.tab1ExperimentHint.setText(' ! Error: Please type in R drive location.\n')
     elif sample == '':
-        self.tab1ExperimentHint.setText('Please type in sample name.\n')
+        self.tab1ExperimentHint.setText(' ! Error: Please type in sample name.\n')
     elif cid == '':
-        self.tab1ExperimentHint.setText('Please type in CID number.\n')
+        self.tab1ExperimentHint.setText(' ! Error: Please type in CID number.\n')
     elif not os.path.exists(r_drive):
-        self.tab1ExperimentHint.setText('Error, R/Data drive not found.\n')
+        self.tab1ExperimentHint.setText(' ! Error: R/Data drive not found.\n')
     elif not os.path.exists(os.path.join(r_drive, sample)):
-        self.tab1ExperimentHint.setText('Error, %s folder not found on R drive.\n' % sample)
+        self.tab1ExperimentHint.setText(' ! Error: %s folder not found on R drive.\n' % sample)
     elif os.path.exists(self.experiment_path):
-        self.tab1ExperimentHint.setText('Error, folder %s already exists.\n'
+        self.tab1ExperimentHint.setText(' ! Error: folder %s already exists.\n'
                                         'Please delete or rename the folder.' % (start_day + suffix))
     else:
         # print("GUI input check passed")
@@ -89,25 +89,25 @@ def input_check(self):
         if self.dropletRadioButton.isChecked():
             tag = 0
             if self.sampleMWLineEdit.text() == '':  # MW
-                self.tab1ExperimentHint.setText('Please type in sample molecular weight.\n')
+                self.tab1ExperimentHint.setText(' ! Error: Please type in sample molecular weight.\n')
             elif not func_mfc.detect_mfc1(self):  # MFC1
-                self.tab1ExperimentHint.setText('Error, MFC1 not connected.\n')
+                self.tab1ExperimentHint.setText(' ! Error: MFC1 not connected.\n')
             else:
                 if self.mfc100RadioButton.isChecked():
                     if not func_mfc.detect_mfc2large(self):
-                        self.tab1ExperimentHint.setText('Error, MFC2(100 sccm) not connected.\n')
+                        self.tab1ExperimentHint.setText(' ! Error: MFC2(100 sccm) not connected.\n')
                     else:
                         tag = 1
                 else:
                     if not func_mfc.detect_mfc2small(self):
-                        self.tab1ExperimentHint.setText('Error, MFC2(10 sccm) not connected.\n')
+                        self.tab1ExperimentHint.setText(' ! Error: MFC2(10 sccm) not connected.\n')
                     else:
                         print("MFC check passed")
                         tag = 1
         # tank
         else:
             if self.sampleTankConcLineEdit.text() == '':  # tank_conc
-                self.tab1ExperimentHint.setText('Please type in tank concentration.\n\n')
+                self.tab1ExperimentHint.setText(' ! Error: Please type in tank concentration.\n')
                 tag = 0
     return tag
 
@@ -127,11 +127,11 @@ def datakey_check(self):
         dm = dm_queue.get(timeout=5)
         if dm['source'] == self.analyzer_source:
             if 'time' not in dm['data']:
-                self.tab1ExperimentHint.setText("! Error: Missing datakey 'time'.\nPlease try again.")
+                self.tab1ExperimentHint.setText(" ! Error: Missing datakey 'time'.\nPlease try again.")
             elif self.datakey not in dm['data']:
-                self.tab1ExperimentHint.setText("! Error: Missing datakey '%s'.\nPlease try again" % self.datakey)
+                self.tab1ExperimentHint.setText(" ! Error: Missing datakey '%s'.\nPlease try again." % self.datakey)
             elif lib_value not in dm['data']:
-                self.tab1ExperimentHint.setText("! Error: Missing datakey '%s'.\nPlease try again" % lib_value)
+                self.tab1ExperimentHint.setText(" ! Error: Missing datakey '%s'.\nPlease try again." % lib_value)
             else:
                 tag = 1
                 # print(dm['data']['time'])
@@ -141,10 +141,10 @@ def datakey_check(self):
             if tag:
                 if self.dropletRadioButton.isChecked():  # check datakey: MFC1_flow, MFC2_flow
                     if 'MFC1_flow' not in dm['data']:
-                        self.tab1ExperimentHint.setText("! Error: Missing datakey dm['MFC1_flow'].\nPlease try again")
+                        self.tab1ExperimentHint.setText(" ! Error: Missing datakey dm['MFC1_flow'].\nPlease try again.")
                         tag = 0
                     elif 'MFC2_flow' not in dm['data']:
-                        self.tab1ExperimentHint.setText("! Error: Missing datakey dm['MFC2_flow'].\nPlease try again")
+                        self.tab1ExperimentHint.setText(" ! Error: Missing datakey dm['MFC2_flow'].\nPlease try again.")
                         tag = 0
 
         if tag:
@@ -183,7 +183,10 @@ def create_experiment(self):
     if tag:
         tag = datakey_check(self)
         
+    # tab2 plot
     if tag:
+        # self.startPlotButton.setEnabled(True)
+        # self.stopPlotButton.setEnabled(False)
         if self.plotCheckbox.isChecked():
             start_plot(self)
 
@@ -233,14 +236,13 @@ def create_experiment(self):
 
             self.tab1CreateExpButton.setEnabled(False)
             self.expStartButton.setEnabled(True)
-            self.startPlotButton.setEnabled(True)
 
             start_day = self.expStartLineEdit.text()
             suffix = self.expSuffix.text()
             self.tab1ExperimentHint.setText(
-                "Experiment %s created!\nYou may press the start button now." % (start_day + suffix))
+                "• Experiment %s created!\nYou may press the start button now." % (start_day + suffix))
         except:
-            self.tab1ExperimentHint.setText('Error creating experiment.\n')
+            self.tab1ExperimentHint.setText(' ! Error creating experiment.\n')
 
 
 ## save parameters locally for the GUI
@@ -293,7 +295,7 @@ def save_parameter_R(self):
             with open(p, 'w') as f:
                 f.write(self.sampleTankConcLineEdit.text())
     except:
-        self.tab1ExperimentHint.setText("! Failed to save parameters on R drive.")
+        self.tab1ExperimentHint.setText(" ! Failed to save parameters on R drive.\n")
 
 
 def save_parameter_R_time(self):
@@ -472,10 +474,10 @@ def start_exp(self):
         self.epoch2 = int(time.time()) + BASELINE_Time * 60 + 660
         ep = time.strftime('%Y%m%d %H:%M:%S', time.localtime(self.epoch2))
         self.tab1ExperimentHint.setText(
-            "Experiment started at %s:%s!\nPlease wait at least 30min, until %s:%s to add sample."
+            "• Experiment started at %s:%s!\nPlease wait at least 30min, until %s:%s to add sample."
             % (t2, t3, ep[9:11], ep[12:14]))
     except:
-        self.tab1ExperimentHint.setText('! Error start experiment.\n')
+        self.tab1ExperimentHint.setText(' ! Error start experiment.\n')
 
 
 # add sample, get baseline 1
@@ -494,9 +496,10 @@ def add_sample(self):
                 reply = QMessageBox.question(self, 'Warning', note, QMessageBox.StandardButton.Ok)
 
         ## get baseline 1:
+        print('len baseline', len(self.baseline))
         try:
-            baseline_before = self.baseline[:-60]
-        except:  # cheater to waive the 30 min baseline requirement
+            baseline_before = self.baseline[:-20]
+        except:  # cheater to waive the 30-min baseline requirement
             baseline_before = self.baseline[:-5]
 
         self.zero1 = np.mean(baseline_before)
@@ -517,13 +520,13 @@ def add_sample(self):
         self.expAddCombobox2.setCurrentText(t3)  # '00'
 
         self.expAddButton.setEnabled(False)
-        self.note1 = "⦿ Sample added at %s:%s! Please run until baseline is stable.\n" \
+        self.note1 = "• Sample added at %s:%s! Please run until baseline is stable.\n" \
                      "Baseline before: %.4E" % (t2, t3, self.zero1)
         self.tab1ExperimentHint.setText(self.note1)
 
         save_parameter_R_time(self)
     except:
-        self.tab1ExperimentHint.setText('! Error record add sample time.\n\n')
+        self.tab1ExperimentHint.setText(' ! Error record add sample time.\n')
 
 
 def track_baseline1(self):
@@ -546,11 +549,11 @@ def track_baseline1(self):
             with open(fnrt, 'w') as f:
                 f.write("%s\n%s\n%s" % (t1, t2, t3))
 
-            self.tab1ExperimentHint.setText('Concentration has dropped below baseline+%s sigma. You may end now\n'
+            self.tab1ExperimentHint.setText('• Concentration has dropped below baseline+%s sigma. You may end now\n'
                                             'Baseline before: %.4E, now: %.4E' % (
                                                 int(self.sample_sigma), self.zero1, zero2))
     except:
-        self.tab1ExperimentHint.setText('! Error: Failed to track baseline.\n')
+        self.tab1ExperimentHint.setText(' ! Error: Failed to track baseline.\n')
 
 
 def end_exp(self):
@@ -572,7 +575,7 @@ def end_exp(self):
     self.expEndLineEdit.setText(t1)  ## '20211124'
     self.expEndCombobox1.setCurrentText(t2)
     self.expEndCombobox2.setCurrentText(t3)
-    self.tab1ExperimentHint.setText('Experiment ended at %s:%s.\n%s' % (t2, t3, note))
+    self.tab1ExperimentHint.setText('• Experiment ended at %s:%s.\n%s' % (t2, t3, note))
 
     # stop the plot
     if self.stopPlotButton.isEnabled():
