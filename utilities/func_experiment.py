@@ -19,8 +19,8 @@ import StringPickler_py3 as StringPickler
 
 BASELINE_Time = 20  # min, sample baseline time
 PLOT_WINDOW_LENGTH = 1  # hour, time length for plot window
-window_points = int(PLOT_WINDOW_LENGTH * 3600 / 5)  # about 5/s generates a point
-baseline_points = int(BASELINE_Time * 60 / 5)
+# window_points = int(PLOT_WINDOW_LENGTH * 3600 / 5)  # about 5/s generates a point
+# baseline_points = int(BASELINE_Time * 60 / 5)
 
 
 def choose_droplet(self):
@@ -165,7 +165,13 @@ def create_experiment(self):
         data_speed = func_analyzer.detect_analyzer_portout(self)
         if data_speed:
             print("analyzer port check passed, fitter data speed (s/pt): %s" % data_speed)
-            tag = 1
+            if data_speed < 5:  # set uplimt of points, faster speed may have too many points
+                data_speed = 5
+
+            self.window_points = int(PLOT_WINDOW_LENGTH * 3600 / data_speed)
+            self.baseline_points = int(BASELINE_Time * 60 / data_speed)
+        else:
+            tag = 0
 
     # send MFC data to analyzer if not yet
     if tag:
@@ -178,7 +184,7 @@ def create_experiment(self):
         tag = datakey_check(self)
         
     if tag:
-        if plotCheckbox.isChecked():
+        if self.plotCheckbox.isChecked():
             start_plot(self)
 
     # everything is ready, we can run experiment now
@@ -356,7 +362,7 @@ def data_manager(self):
         dm = dm_queue.get(timeout=5)
 
         if dm['source'] == self.analyzer_source:
-            if len(self.y) == window_points:  ## x-axis number
+            if len(self.y) == self.window_points:  ## x-axis number
                 self.x.pop(0)
                 self.y.pop(0)
 
@@ -364,8 +370,8 @@ def data_manager(self):
             self.x.append(t)
             self.y.append(dm['data'][self.datakey])
 
-            if len(self.y) > baseline_points:
-                self.baseline = self.y[-baseline_points:]
+            if len(self.y) > self.baseline_points:
+                self.baseline = self.y[-self.baseline_points:]
             else:
                 self.baseline = self.y
 

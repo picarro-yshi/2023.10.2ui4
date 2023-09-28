@@ -54,7 +54,7 @@ def detect_analyzer_portout(self):
         self.tab1ExperimentHint.setText("Analyzer output port not ready.\n")
         self.analyzerPortOutHintLabel.setText('\u2717')
         
-    print("fitter data speed (s/pt)", interval)
+    # print("fitter data speed (s/pt)", interval)
     return interval
 
 

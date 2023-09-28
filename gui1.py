@@ -569,7 +569,7 @@ class Window(QWidget):
         grid.addWidget(self.tab1MFC10Button, 3, 4)
 
         grid.addWidget(self.automationCheckbox, 4, 0, 1, 2)
-        grid.addWidget(self.mfcHintLabel, 4, 2, 1, 2)
+        grid.addWidget(self.mfcHintLabel, 4, 3, 1, 2)
 
 
     # 4 round buttons
