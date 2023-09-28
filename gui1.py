@@ -220,8 +220,12 @@ class Window(QWidget):
 
         # label0 = QLabel('Select data key for plot:')
         # self.datakeyCombobox = QComboBox(self)
-        label0 = QLabel("Data key for plot:")
+        # label0 = QLabel("Data key for plot:")
         # layout_key = QHBoxLayout()
+
+        self.plotCheckbox = QCheckBox("Plot data key:")
+        self.plotCheckbox.setChecked(True)
+        self.plotCheckbox.setToolTip('Check if you want tab2 plot to start.')
         self.datakeyLabel = QLabel("broadband_gasConcs_[CID]")
         self.tab1Layout1Hint = QLabel()
         layout0 = QHBoxLayout()
@@ -232,12 +236,12 @@ class Window(QWidget):
 
         self.tab1LogoLayout.addWidget(logo)
         self.tab1LogoLayout.addWidget(version)
-        self.tab1LogoLayout.addWidget(label0)
+        self.tab1LogoLayout.addWidget(self.plotCheckbox)
         self.tab1LogoLayout.addWidget(self.datakeyLabel)
         self.tab1LogoLayout.addLayout(layout0)
         self.tab1LogoLayout.addWidget(self.tab1Layout1Hint)
 
-        layout1 = QVBoxLayout()
+        # layout1 = QVBoxLayout()
         layout2 = QVBoxLayout()
         layout3 = QVBoxLayout()
         layout4 = QVBoxLayout()
@@ -320,7 +324,7 @@ class Window(QWidget):
         label2 = QLabel("Time (sec):")
         self.scaleTimeLineEdit = QLineEdit('180')
         self.scaleTimeLineEdit.setToolTip("Weigh sample for a time (in seconds).")
-        self.scaleTimeLineEdit.setStyleSheet("background: lightgrey")
+        self.scaleTimeLineEdit.setStyleSheet(style.grey1())
 
         layout12.addWidget(label2)
         layout12.addWidget(self.scaleTimeLineEdit)
@@ -358,7 +362,7 @@ class Window(QWidget):
 
         label3 = QLabel("Reading: ")
         self.ScaleRealTimeLabel = QLabel("                 ")
-        self.ScaleRealTimeLabel.setStyleSheet("background-color: lightgrey")
+        self.ScaleRealTimeLabel.setStyleSheet(style.grey1())
         # self.ScaleRealTimeLabel.setWordWrap(True)
         layout4.addWidget(label3)
         layout4.addWidget(self.ScaleRealTimeLabel)
@@ -417,7 +421,7 @@ class Window(QWidget):
         self.MFCLayout = QHBoxLayout()  # MFC
         self.timeLayout = QHBoxLayout()  # time
         self.tab1ExperimentHint = QLabel(' \n ')
-        self.tab1ExperimentHint.setStyleSheet("background-color: lightgrey")
+        self.tab1ExperimentHint.setStyleSheet(style.grey1())
 
         self.tab1ExperimentLayout.addLayout(layout1)
         self.tab1ExperimentLayout.addStretch()
@@ -476,17 +480,17 @@ class Window(QWidget):
 
         label1 = QLabel("Pressure (psi)")
         self.tab1PressureLabel = QLabel(" ")
-        self.tab1PressureLabel.setStyleSheet("background-color: lightgrey")
+        self.tab1PressureLabel.setStyleSheet(style.grey1())
         self.tab1PressureLabel.setFixedWidth(70)
         gap = QLabel()
 
         label2 = QLabel("Temperature (°C)")
         self.tab1TempLabel = QLabel()
-        self.tab1TempLabel.setStyleSheet("background-color: lightgrey")
+        self.tab1TempLabel.setStyleSheet(style.grey1())
 
         label3 = QLabel("MFC1 (1 SLPM)")
         self.tab1MFC1Label = QLabel("     ")
-        self.tab1MFC1Label.setStyleSheet("background-color: lightgrey")
+        self.tab1MFC1Label.setStyleSheet(style.grey1())
         self.tab1MFC1Label.setFixedWidth(70)
         self.tab1MFC1LineEdit = QLineEdit('0.95')
         self.tab1MFC1Label.setToolTip('Dilution line\n1 SLPM Alicat')
@@ -506,7 +510,7 @@ class Window(QWidget):
         self.bg2.addButton(self.mfc10RadioButton)
 
         self.tab1MFC100Label = QLabel(" ")
-        self.tab1MFC100Label.setStyleSheet("background-color: lightgrey")
+        self.tab1MFC100Label.setStyleSheet(style.grey1())
         self.tab1MFC100Label.setFixedWidth(70)
 
         self.tab1MFC100Combobox = QComboBox()
@@ -521,7 +525,7 @@ class Window(QWidget):
 
         # label5 = QLabel("MFC2 (10 SCCM)")
         self.tab1MFC10Label = QLabel(" ")
-        self.tab1MFC10Label.setStyleSheet("background-color: lightgrey")
+        self.tab1MFC10Label.setStyleSheet(style.grey1())
         self.tab1MFC10Label.setFixedWidth(70)
 
         self.tab1MFC10Combobox = QComboBox()
@@ -538,6 +542,8 @@ class Window(QWidget):
 
         self.automationCheckbox = QCheckBox("Automate the experiment.")
         self.automationCheckbox.setToolTip('Check if you want to set the flows automatically.')
+        self.mfcHintLabel = QLabel()
+        # self.mfcHintLabel.setStyleSheet(style.grey1())
 
         grid.addWidget(label1, 0, 0)
         grid.addWidget(self.tab1PressureLabel, 0, 1)
@@ -562,7 +568,8 @@ class Window(QWidget):
         grid.addWidget(self.tab1MFC10Combobox, 3, 3)
         grid.addWidget(self.tab1MFC10Button, 3, 4)
 
-        grid.addWidget(self.automationCheckbox, 4, 0, 1, 3)
+        grid.addWidget(self.automationCheckbox, 4, 0, 1, 2)
+        grid.addWidget(self.mfcHintLabel, 4, 2, 1, 2)
 
 
     # 4 round buttons
@@ -703,7 +710,7 @@ class Window(QWidget):
         layout3 = QHBoxLayout()
         layout_calbutton = QHBoxLayout()
         self.tab1CalHintLabel = QLabel(" ")
-        self.tab1CalHintLabel.setStyleSheet("background-color: lightgrey")
+        self.tab1CalHintLabel.setStyleSheet(style.grey1())
         self.tab1CalHintLabel.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
 
         layoutTop.addLayout(layout1)
@@ -711,7 +718,7 @@ class Window(QWidget):
         layoutTop.addLayout(layout3)
         layoutTop.addLayout(layout_calbutton)
         layoutTop.addWidget(self.tab1CalHintLabel)
-        
+
         label1 = QLabel(" Step 1: Calibration Factor")
         label1.setStyleSheet(style.body1())
         self.saveFigCheckbox = QCheckBox("Save Figure")
@@ -800,7 +807,7 @@ class Window(QWidget):
         layout4 = QHBoxLayout()
         grid = QGridLayout()
         self.tab1ComboHintLabel = QLabel("  ")
-        self.tab1ComboHintLabel.setStyleSheet("background-color: lightgrey")
+        self.tab1ComboHintLabel.setStyleSheet(style.grey1())
         self.tab1ComboHintLabel.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
 
         layoutBtm.addLayout(layout4)

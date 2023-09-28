@@ -176,6 +176,10 @@ def create_experiment(self):
     # check if datakey exist
     if tag:
         tag = datakey_check(self)
+        
+    if tag:
+        if plotCheckbox.isChecked():
+            start_plot(self)
 
     # everything is ready, we can run experiment now
     if tag:

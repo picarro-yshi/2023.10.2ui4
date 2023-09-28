@@ -23,7 +23,7 @@ def load_experiment(self):
 
     tag = 0
     if not start_day:
-        self.tab1CalHintLabel.setText('! Error: Please fill in the date(and/or suffix) of the experiment.')
+        self.tab1CalHintLabel.setText('! Error: Please fill in the date(and/or suffix).')
     elif not os.path.isdir(r_drive):
         self.tab1CalHintLabel.setText('! Error: R drive not found.')
     elif not os.path.isdir(fnrp):
@@ -33,6 +33,11 @@ def load_experiment(self):
 
     if tag:
         try:
+            # clear fields
+            # self.maxRowLabel.setText("")
+            # self.oneComboNumLineEdit.setText("")
+            
+            # load parameters
             f = open(os.path.join(fnrp, 't1.txt'), 'r')
             temp = f.read().splitlines()
             print(temp)
@@ -60,7 +65,14 @@ def load_experiment(self):
                 temp = f.read()
                 self.oneComboNumLineEdit.setText(temp)
             except:
-                self.oneComboNumLineEdit.setText("")
+                self.oneComboNumLineEdit.setText("    ")
+
+            try:
+                f = open(os.path.join(fnrp, 'max_row.txt'), 'r')
+                temp = f.read()
+                self.maxRowLabel.setText(temp)
+            except:
+                self.maxRowLabel.setText("    ")
 
             try:
                 f = open(os.path.join(fnrp, 'n_sigma.txt'), 'r')
@@ -88,7 +100,7 @@ def load_experiment(self):
             self.PlotOneComboButton.setEnabled(True)
             self.tab1CalHintLabel.setText('⦿ Parameters  loaded.')
         except:
-            self.tab1CalHintLabel.setText(' ! Error loading parameters for experiment %s.' % (start_day + suffix))
+            self.tab1CalHintLabel.setText(' ! Error loading experiment parameters.')
 
 
 def calculation_check(self):
