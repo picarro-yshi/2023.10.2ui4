@@ -79,11 +79,21 @@ def detect_analyzer_portout_local():
         socket.create_connection((host, port), 5)
         dm_queue = Queue(180)  ## data manager
         listener = Listener(dm_queue, host, port, StringPickler.ArbitraryObject, retry=True)
+        dm = dm_queue.get(timeout=5)
 
         for i in range(10):
             dm = dm_queue.get(timeout=5)
             print(i, dm['source'])
             if dm['source'] == "analyze_VOC_broadband":
+                # print(dm['data']['broadband_gasConcs_9233'])  # float
+            # if dm['source'] == "analyze_VOC_1":
+            #     key1 = list(dm['data'].keys())
+            #     key2 = sorted(key1)
+            #     print(key2)
+            #
+            #     print(dm['data']['max_loss'])  # float
+            #     exit()
+
                 return 1
             if i == 5:
                 return 0

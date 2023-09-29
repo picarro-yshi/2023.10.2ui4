@@ -100,12 +100,16 @@ class Window(QWidget):
         self.timer_mfc.timeout.connect(lambda: func_mfc.sendMFC(self))
         
         self.timer_baseline = QTimer()
-        self.timer_baseline.setInterval(600000)  # ms, check baseline every 5 mins
+        self.timer_baseline.setInterval(600000)  # ms, check baseline every 10 mins
         self.timer_baseline.timeout.connect(lambda: func_experiment.track_baseline1(self))
         
         self.timer_data = QTimer()
         self.timer_data.setInterval(DATA_RECEIVE_TIME)  # data manager
         self.timer_data.timeout.connect(lambda: func_experiment.data_manager(self))
+        
+        self.timer_auto = QTimer()
+        self.timer_auto.setInterval(600000)  # ms, check loss every 10 mins
+        self.timer_auto.timeout.connect(lambda: func_experiment.track_loss(self))
 
 
     def set_window_layout(self):
@@ -268,7 +272,8 @@ class Window(QWidget):
         self.sendMFCButton = QToolButton()
         self.sendMFCButton.setIcon(QIcon("icons/arrow.png"))
         self.sendMFCButton.setIconSize(QSize(40, 40))
-        self.sendMFCButton.setToolTip("Send MFC data to the analyzer so it will show up in the 'Data Key' of the analyzer GUI")
+        self.sendMFCButton.setToolTip("Send MFC data to the analyzer\nso it will show up in the\n"
+                                      "'Data Key' of the analyzer GUI\nSelect MFC2 before click it.")
         # self.sendMFCButton.clicked.connect(self.send_MFC_data)
         self.sendMFCButton.clicked.connect(lambda: func_mfc.send_MFC_data(self))
         label2 = QLabel('Send MFC')
@@ -482,7 +487,7 @@ class Window(QWidget):
         self.tab1PressureLabel = QLabel(" ")
         self.tab1PressureLabel.setStyleSheet(style.grey1())
         self.tab1PressureLabel.setFixedWidth(70)
-        gap = QLabel()
+        # gap = QLabel()
 
         label2 = QLabel("Temperature (°C)")
         self.tab1TempLabel = QLabel()
@@ -499,7 +504,9 @@ class Window(QWidget):
         self.tab1MFC1Button.clicked.connect(lambda: func_mfc.set_mfc_1slpm(self))
 
         self.mfc100RadioButton = QRadioButton("MFC2 (100 SCCM)", self)
+        self.mfc100RadioButton.setToolTip("valve mask 0\n! Please set up manually on analyzer")
         self.mfc10RadioButton = QRadioButton("MFC2 (10 SCCM)", self)
+        self.mfc10RadioButton.setToolTip("valve mask 1\n! Please set up manually on analyzer")
         self.mfc100RadioButton.setChecked(True)
 
         self.mfc100RadioButton.toggled.connect(lambda: func_mfc.choose_100sccm(self))
@@ -547,7 +554,7 @@ class Window(QWidget):
 
         grid.addWidget(label1, 0, 0)
         grid.addWidget(self.tab1PressureLabel, 0, 1)
-        grid.addWidget(gap, 0, 2)
+        # grid.addWidget(gap, 0, 2)
         grid.addWidget(label2, 0, 3)
         grid.addWidget(self.tab1TempLabel, 0, 4)
 

@@ -13,9 +13,13 @@ datakey1 = 'MFC1_flow'
 datakey2 = 'MFC2_flow'
 
 
-def set_mfc_1slpm(self):
+def set_mfc_1slpm(self, x=None):
     try:
-        F1 = float(self.tab1MFC1LineEdit.text())  # dilution line
+        if x is None:
+            F1 = float(self.tab1MFC1LineEdit.text())  # dilution line
+        else:
+            F1 = x
+            
         if F1 > 1 or F1 < 0:
             self.mfcHintLabel.setText('! Error: Input a value between 0-1.')
         else:
@@ -28,9 +32,13 @@ def set_mfc_1slpm(self):
         self.mfcHintLabel.setText('! Error: unable to set MFC1 flow.')
 
 
-def set_mfc_100sccm(self):
+def set_mfc_100sccm(self, x=None):
     try:
-        F2 = float(self.tab1MFC100Combobox.currentText())  # bubbler line large
+        if x is None:
+            F2 = float(self.tab1MFC100Combobox.currentText())  # bubbler line large
+        else:
+            F2 = x
+        
         if F2 > 100 or F2 < 0:
             self.mfcHintLabel.setText('! Error: Input a value between 0-100.')
         else:
@@ -48,9 +56,13 @@ def set_mfc_100sccm(self):
         self.mfcHintLabel.setText('! Error: Unable to set MFC2 flow.')
 
 
-def set_mfc_10sccm(self):
+def set_mfc_10sccm(self, x=None):
     try:
-        F2 = float(self.tab1MFC10Combobox.currentText())  # bubbler line small
+        if x is None:
+            F2 = float(self.tab1MFC10Combobox.currentText())  # bubbler line small
+        else:
+            F2 = x
+        
         if F2 > 10 or F2 < 0:
             self.mfcHintLabel.setText('! Error: Input a value between 0-10.')
         else:
@@ -116,10 +128,12 @@ def send_MFC_data(self):
         if self.mfc100RadioButton.isChecked():
             mfc_address2 = self.MFC2largeAddressLineEdit.text()
             self.mfc2_refresh_label = self.tab1MFC100Label
+            self.tab1MFC10Label.setText()
         else:
             mfc_address2 = self.MFC2smallAddressLineEdit.text()
             self.mfc2_refresh_label = self.tab1MFC10Label
-    
+            self.tab1MFC100Label.setText()
+
         self.flow_controller1 = FlowController(port=port_mfc, address=mfc_address1)
         self.flow_controller2 = FlowController(port=port_mfc, address=mfc_address2)
     

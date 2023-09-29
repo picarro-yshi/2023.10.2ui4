@@ -21,6 +21,7 @@ BASELINE_Time = 20  # min, sample baseline time
 PLOT_WINDOW_LENGTH = 1  # hour, time length for plot window
 # window_points = int(PLOT_WINDOW_LENGTH * 3600 / 5)  # about 5/s generates a point
 # baseline_points = int(BASELINE_Time * 60 / 5)
+ANALYZER_SOURCE2 = "analyze_VOC_1"
 
 
 def choose_droplet(self):
@@ -31,6 +32,7 @@ def choose_droplet(self):
     self.tankTitleLabel.setDisabled(True)  # tank conc
     self.sampleTankConcLineEdit.setDisabled(True)
     self.aqCheckbox.setDisabled(False)  # aqueous droplet
+    self.automationCheckbox.setDisabled(False)
 
     ## button tips
     self.expStartButton.setToolTip("Start experiment,\nsend Alicat data to analyzer.\n"
@@ -47,6 +49,7 @@ def choose_tank(self):
     self.tankTitleLabel.setDisabled(False)  # tank conc.
     self.sampleTankConcLineEdit.setDisabled(False)
     self.aqCheckbox.setDisabled(True)  # aqueous droplet
+    self.automationCheckbox.setDisabled(True)
 
     ## button tips
     self.expStartButton.setToolTip("Start experiment.\nRecord start time.")
@@ -473,9 +476,13 @@ def start_exp(self):
         # 30 min later: 20 min baseline+10 min, see spike when turn on bubble line
         self.epoch2 = int(time.time()) + BASELINE_Time * 60 + 660
         ep = time.strftime('%Y%m%d %H:%M:%S', time.localtime(self.epoch2))
-        self.tab1ExperimentHint.setText(
-            "• Experiment started at %s:%s!\nPlease wait at least 30min, until %s:%s to add sample."
-            % (t2, t3, ep[9:11], ep[12:14]))
+        note1 = "• Experiment started at %s:%s!\nPlease wait at least 30min, until %s:%s to " % (t2, t3, ep[9:11], ep[12:14])
+        if self.dropletRadioButton.isChecked():
+            note2 = "add sample."
+        else:
+            note2 = "switch tank."
+        self.tab1ExperimentHint.setText(note1 + note2)
+
     except:
         self.tab1ExperimentHint.setText(' ! Error start experiment.\n')
 
@@ -520,40 +527,148 @@ def add_sample(self):
         self.expAddCombobox2.setCurrentText(t3)  # '00'
 
         self.expAddButton.setEnabled(False)
-        self.note1 = "• Sample added at %s:%s! Please run until baseline is stable.\n" \
-                     "Baseline before: %.4E" % (t2, t3, self.zero1)
-        self.tab1ExperimentHint.setText(self.note1)
+        if self.dropletRadioButton.isChecked():
+            self.note1 = "• Sample added at %s:%s! Please run until baseline is stable.\n" \
+                         "Baseline before: %.4E" % (t2, t3, self.zero1)
 
+            # automation
+            if self.automationCheckbox.isChecked():
+                # use half the set flow for start
+                if self.dropletRadioButton.isChecked():
+                    flow = float(self.tab1MFC100Combobox.currentText())/2
+                    func_mfc.set_mfc_100sccm(self, flow)
+                else:
+                    flow = float(self.tab1MFC10Combobox.currentText())/2
+                    func_mfc.set_mfc_10sccm(self, flow)
+
+                self.auto_tag1 = 1
+                self.auto_tag2 = 0
+                self.auto_tag3 = 0
+                self.timer_auto.start()
+        else:
+            self.note1 = "• Sample tank connected at %s:%s! Please run until baseline is stable.\n" \
+                         "Baseline std before: %.4E" % (t2, t3, self.sigma1)
+        self.tab1ExperimentHint.setText(self.note1)
         save_parameter_R_time(self)
     except:
         self.tab1ExperimentHint.setText(' ! Error record add sample time.\n')
 
 
+def update_endtime(self):
+    fnrt = os.path.join(self.experiment_path, 'par', 't3.txt')
+    t1 = time.strftime("%Y%m%d")
+    t2 = time.strftime("%H")
+    t3 = time.strftime("%M")
+    self.expEndLineEdit.setText(t1)  # autofill, as a message, baseline is low enough and experiment can stop
+    self.expEndCombobox1.setCurrentText(t2)
+    self.expEndCombobox2.setCurrentText(t3)
+
+    with open(fnrt, 'w') as f:
+        f.write("%s\n%s\n%s" % (t1, t2, t3))
+
+
 def track_baseline1(self):
     try:
         zero2 = np.mean(self.baseline)
-        print('zero2', zero2)
+        sigma2 = np.std(self.baseline)
+
+        print('zero2', zero2, sigma2)
         print(time.ctime(time.time()))
-        if self.expEndLineEdit.text() == "":
-            self.tab1ExperimentHint.setText(self.note1 + ', now: %.4E' % zero2)
 
-        if zero2 < self.zero1 + self.sigma1 * self.sample_sigma:  # record value when sees baseline+n*sigma
-            fnrt = os.path.join(self.experiment_path, 'par', 't3.txt')
-            t1 = time.strftime("%Y%m%d")
-            t2 = time.strftime("%H")
-            t3 = time.strftime("%M")
-            self.expEndLineEdit.setText(t1)  # auto fill, as a message, baseline is low enough and experiment can stop
-            self.expEndCombobox1.setCurrentText(t2)
-            self.expEndCombobox2.setCurrentText(t3)
+        if self.dropletRadioButton.isChecked():
+            if self.expEndLineEdit.text() == "":
+                self.tab1ExperimentHint.setText(self.note1 + ', now: %.4E' % zero2)
 
-            with open(fnrt, 'w') as f:
-                f.write("%s\n%s\n%s" % (t1, t2, t3))
+            if zero2 < self.zero1 + self.sigma1 * self.sample_sigma:  # record value on GUI
+                update_endtime(self)
+                self.tab1ExperimentHint.setText('• Concentration has dropped below baseline+%s sigma. You may end now\n'
+                                                'Baseline before: %.4E, now: %.4E' % (
+                                                    int(self.sample_sigma), self.zero1, zero2))
 
-            self.tab1ExperimentHint.setText('• Concentration has dropped below baseline+%s sigma. You may end now\n'
-                                            'Baseline before: %.4E, now: %.4E' % (
-                                                int(self.sample_sigma), self.zero1, zero2))
+        else:
+            if self.expEndLineEdit.text() == "":
+                self.tab1ExperimentHint.setText(self.note1 + ', now: %.4E' % sigma2)
+
+            if sigma2 < self.sigma1 * 1.1:  # 1.05
+                update_endtime(self)
+
+
+
+
+        # if self.expEndLineEdit.text() == "":
+        #     if self.dropletRadioButton.isChecked():
+        #         self.tab1ExperimentHint.setText(self.note1 + ', now: %.4E' % zero2)
+        #     else:
+        #         self.tab1ExperimentHint.setText(self.note1 + ', now: %.4E' % sigma2)
+
+
+        # if zero2 < self.zero1 + self.sigma1 * self.sample_sigma:  # record value when sees baseline+n*sigma
+
+
+            # fnrt = os.path.join(self.experiment_path, 'par', 't3.txt')
+            # t1 = time.strftime("%Y%m%d")
+            # t2 = time.strftime("%H")
+            # t3 = time.strftime("%M")
+            # self.expEndLineEdit.setText(t1)  # autofill, as a message, baseline is low enough and experiment can stop
+            # self.expEndCombobox1.setCurrentText(t2)
+            # self.expEndCombobox2.setCurrentText(t3)
+            #
+            # with open(fnrt, 'w') as f:
+            #     f.write("%s\n%s\n%s" % (t1, t2, t3))
+
+            self.tab1ExperimentHint.setText('• Baseline is stable for the past 30-min. You may end now\n'
+                                            'Baseline std before: %.4E, now: %.4E' % (
+                                                self.sigma1, sigma2))
     except:
         self.tab1ExperimentHint.setText(' ! Error: Failed to track baseline.\n')
+
+
+def track_loss(self):
+    try:
+        if self.auto_tag1:
+            dm_queue = Queue(180)  ## data manager
+            listener = Listener(dm_queue, self.host, self.port_out, StringPickler.ArbitraryObject, retry=True)
+            dm = dm_queue.get(timeout=5)
+
+            for i in range(10):
+                if dm['source'] == ANALYZER_SOURCE2:
+                    loss = int(dm['data']['max_loss'])
+                    break
+        
+        # avoid the spike, set to full flow rate after 10 min
+            if loss < 1000:
+                if self.mfc100RadioButton.isChecked():
+                    func_mfc.set_mfc_100sccm(self)
+                else:
+                    func_mfc.set_mfc_10sccm(self)
+                self.auto_tag1 = 0
+                self.auto_tag2 = 1
+            elif loss > 1500:
+                self.tab1ExperimentHint.setText(" ! Concentration too high, failed to automate the experiment.\n"
+                                                " Please leave it run, or reduce flow and try again.")
+                self.timer_auto.stop()
+
+        # set to maximum flow after baseline drop to e-07 '3.016901661630596e-07'
+        if self.auto_tag2:
+            concentration = self.y[-1]
+            if str(concentration)[-2:] == 'e-07':
+                if self.dropletRadioButton.isChecked():
+                    func_mfc.set_mfc_100sccm(self, 100)
+                else:
+                    func_mfc.set_mfc_10sccm(self, 10)
+                self.auto_tag2 = 0
+                self.auto_tag3 = 1
+
+        # shut down gas flow after experiment ends
+        if self.auto_tag3:
+            if not self.expEndLineEdit.text() == "":
+                end_exp(self)
+                # time.sleep(60)
+                # func_mfc.set_mfc_1slpm(self, 0)
+                # func_mfc.stop_flow(self)
+                # self.timer_auto.stop()
+    except:
+        print('Failed to automate the experiment')
 
 
 def end_exp(self):
@@ -584,8 +699,14 @@ def end_exp(self):
 
     self.timer_baseline.stop()  # track baseline
     self.timer_data.stop()  # data manager
+    try:
+        self.timer_auto.stop()
+        func_mfc.set_mfc_1slpm(self, 0)
+        func_mfc.stop_flow(self)
+    except:
+        pass
 
-    # enough time to get the most recent time in line_edit
+    # enough time to get the most recent time from line_edit
     save_parameter_R(self)
     save_parameter_R_time(self)
 
