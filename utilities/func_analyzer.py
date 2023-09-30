@@ -103,5 +103,5 @@ def detect_analyzer_portout_local():
 
 
 if __name__ == "__main__":
-    # print(detect_analyzer_portin_local())
-    print(detect_analyzer_portout_local())
+    print(detect_analyzer_portin_local())
+    # print(detect_analyzer_portout_local())

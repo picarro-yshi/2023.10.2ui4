@@ -173,6 +173,11 @@ def create_experiment(self):
 
             self.window_points = int(PLOT_WINDOW_LENGTH * 3600 / data_speed)
             self.baseline_points = int(BASELINE_Time * 60 / data_speed)
+            print(self.window_points, self.baseline_points)
+            # very slow, 1~2 points/min
+            self.window_points = int(PLOT_WINDOW_LENGTH * 60 * 4)
+            self.baseline_points = int(BASELINE_Time * 2)
+            print(self.window_points, self.baseline_points)
         else:
             tag = 0
 
@@ -379,8 +384,11 @@ def data_manager(self):
                 self.baseline = self.y[-self.baseline_points:]
             else:
                 self.baseline = self.y
+            # print(self.baseline)
 
-            clock = time.strftime('%H:%M', self.x[-1])
+            clock = time.strftime('%H:%M', time.localtime(self.x[-1]))
+            # print('clock', clock)
+            # print(self.xtick)
             if self.xtick:
                 clock0 = time.strftime(
                     "%H:%M", time.localtime(self.x[-2])
@@ -388,15 +396,17 @@ def data_manager(self):
                 if (
                         (clock0[-2:] == "59" and clock[-2:] == "00")
                         or (clock0[-2:] == "29" and clock[-2:] == "30")
-                        or (clock0[-2:] == "14" and clock[-2:] == "15")
-                        or (clock0[-2:] == "44" and clock[-2:] == "45")
+                        # or (clock0[-2:] == "14" and clock[-2:] == "15")
+                        # or (clock0[-2:] == "44" and clock[-2:] == "45")
                 ):
                     self.xtick.append((t, clock))
             else:  # no tick label yet, add current as the first one
                 self.xtick.append((t, clock))
+            # print(self.xtick)
 
             if self.xtick[0][0] < self.x[0]:
                 self.xtick.pop(0)
+            # print('len xtick', len(self.xtick))
     except:
         pass
 
@@ -584,6 +594,8 @@ def track_baseline1(self):
                 self.tab1ExperimentHint.setText('• Concentration has dropped below baseline+%s sigma. You may end now\n'
                                                 'Baseline before: %.4E, now: %.4E' % (
                                                     int(self.sample_sigma), self.zero1, zero2))
+                # stop plot to save memory
+                self.timer.plot.stop()
 
         else:
             if self.expEndLineEdit.text() == "":
@@ -699,13 +711,15 @@ def end_exp(self):
 
     self.timer_baseline.stop()  # track baseline
     self.timer_data.stop()  # data manager
+
     try:
         self.timer_auto.stop()
-        func_mfc.set_mfc_1slpm(self, 0)
-        func_mfc.stop_flow(self)
     except:
         pass
 
+    if self.automationCheckbox.isChecked():
+        func_mfc.set_mfc_1slpm(self, 0)
+        func_mfc.stop_flow(self)
     # enough time to get the most recent time from line_edit
     save_parameter_R(self)
     save_parameter_R_time(self)

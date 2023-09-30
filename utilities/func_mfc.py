@@ -125,26 +125,27 @@ def send_MFC_data(self):
     try:
         port_mfc = self.mfcPortCombobox.currentText()
         mfc_address1 = self.MFC1AddressLineEdit.text()
+
         if self.mfc100RadioButton.isChecked():
             mfc_address2 = self.MFC2largeAddressLineEdit.text()
             self.mfc2_refresh_label = self.tab1MFC100Label
-            self.tab1MFC10Label.setText()
+            self.tab1MFC10Label.setText("")  # need to put ""
         else:
             mfc_address2 = self.MFC2smallAddressLineEdit.text()
             self.mfc2_refresh_label = self.tab1MFC10Label
-            self.tab1MFC100Label.setText()
+            self.tab1MFC100Label.setText("")
 
         self.flow_controller1 = FlowController(port=port_mfc, address=mfc_address1)
         self.flow_controller2 = FlowController(port=port_mfc, address=mfc_address2)
-    
+
         host = self.analyzerIPLineEdit.text()
         self.analyzer_ip = 'http://' + host
-    
+
         self.timer_mfc.start()
         self.sendMFCButton.setEnabled(False)
         self.stopSendMFCButton.setEnabled(True)
     except:
-        self.tab1ExperimentHint.setText(" ! Error sending MFC data to analyzer.\n")
+        self.tab1ExperimentHint.setText(" ! Error sending MFC data to analyzer.\nPlease try again.")
 
 
 def sendMFC(self):
