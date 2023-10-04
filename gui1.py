@@ -108,7 +108,7 @@ class Window(QWidget):
         self.timer_data.timeout.connect(lambda: func_experiment.data_manager(self))
         
         self.timer_auto = QTimer()
-        self.timer_auto.setInterval(600000)  # ms, check loss every 10 mins
+        self.timer_auto.setInterval(300000)  # ms, check loss every 5 mins
         self.timer_auto.timeout.connect(lambda: func_experiment.track_loss(self))
 
 
@@ -478,6 +478,8 @@ class Window(QWidget):
 
         self.createTab1MFCLayout()
         self.createTab1TimeLayout()
+        func_experiment.choose_droplet(self)
+
 
     def createTab1MFCLayout(self):
         grid = QGridLayout()
@@ -548,7 +550,9 @@ class Window(QWidget):
         func_mfc.choose_100sccm(self)
 
         self.automationCheckbox = QCheckBox("Automate the experiment.")
-        self.automationCheckbox.setToolTip('Check if you want to set the flows automatically.')
+        self.automationCheckbox.setToolTip("Check if you want to set the flows automatically.\n"
+                                           "Check/uncheck before click 'Add Sample' Button.")
+        self.automationCheckbox.setChecked(True)
         self.mfcHintLabel = QLabel()
         # self.mfcHintLabel.setStyleSheet(style.grey1())
 

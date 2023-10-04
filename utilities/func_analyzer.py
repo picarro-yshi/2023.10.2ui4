@@ -79,7 +79,6 @@ def detect_analyzer_portout_local():
         socket.create_connection((host, port), 5)
         dm_queue = Queue(180)  ## data manager
         listener = Listener(dm_queue, host, port, StringPickler.ArbitraryObject, retry=True)
-        dm = dm_queue.get(timeout=5)
 
         for i in range(10):
             dm = dm_queue.get(timeout=5)

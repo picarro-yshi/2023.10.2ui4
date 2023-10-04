@@ -4,9 +4,9 @@ from queue import Queue
 import time
 import os
 
+from alicat import FlowController
 from Listener_py3 import Listener
 import StringPickler_py3 as StringPickler
-from alicat import FlowController
 import CmdFIFO_py3 as CmdFIFO
 
 datakey1 = 'MFC1_flow'

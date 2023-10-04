@@ -37,7 +37,7 @@ def choose_droplet(self):
     ## button tips
     self.expStartButton.setToolTip("Start experiment,\nsend Alicat data to analyzer.\n"
                                    "Record start time.")
-    self.expAddButton.setToolTip("Steps:\nStop bubble line flow\n->Add sample \n->Restore bubble line flow\n"
+    self.expAddButton.setToolTip("Steps:\n->Stop bubble line flow\n->Add sample \n"
                                  "->Click this button to\n record time and weight.")
 
 
@@ -157,6 +157,9 @@ def datakey_check(self):
 
 
 def create_experiment(self):
+    # open the N2 gas
+    set_MFC2_flow(self)
+
     # input error check, fill in start day, check MFC connection
     tag = input_check(self)
 
@@ -167,16 +170,20 @@ def create_experiment(self):
     if tag:
         data_speed = func_analyzer.detect_analyzer_portout(self)
         if data_speed:
+            # ideal value:
             print("analyzer port check passed, fitter data speed (s/pt): %s" % data_speed)
-            if data_speed < 5:  # set uplimt of points, faster speed may have too many points
-                data_speed = 5
+            # if data_speed < 5:  # set uplimit of points, faster speed may have too many points
+            #     data_speed = 5
+            # elif data_speed > 8:  # bottom line, slow speed wait too long
+            #     data_speed = 8
 
             self.window_points = int(PLOT_WINDOW_LENGTH * 3600 / data_speed)
             self.baseline_points = int(BASELINE_Time * 60 / data_speed)
             print(self.window_points, self.baseline_points)
-            # very slow, 1~2 points/min
+
+            # practical value: very slow, 3~4 points/min
             self.window_points = int(PLOT_WINDOW_LENGTH * 60 * 4)
-            self.baseline_points = int(BASELINE_Time * 2)
+            self.baseline_points = int(BASELINE_Time * 4)
             print(self.window_points, self.baseline_points)
         else:
             tag = 0
@@ -201,8 +208,12 @@ def create_experiment(self):
     # everything is ready, we can run experiment now
     if tag:
         print("all checks passed!")
+        # set_MFC2_flow(self)
+
         try:
             # data manager
+            self.dm_queue = Queue(180)  ## data manager
+            listener = Listener(self.dm_queue, self.host, self.port_out, StringPickler.ArbitraryObject, retry=True)
             self.timer_data.start()
             print('data manager timer started')
 
@@ -242,8 +253,13 @@ def create_experiment(self):
             save_parameter_R(self)
             print('parameters saved')
 
+            # enable, disable
             self.tab1CreateExpButton.setEnabled(False)
             self.expStartButton.setEnabled(True)
+            if self.dropletRadioButton.isChecked():
+                self.tankRadioButton.setEnabled(False)
+            else:
+                self.dropletRadioButton.setEnabled(False)
 
             start_day = self.expStartLineEdit.text()
             suffix = self.expSuffix.text()
@@ -367,9 +383,9 @@ def save_parameter_R_time(self):
 
 def data_manager(self):
     try:
-        dm_queue = Queue(180)  ## data manager
-        listener = Listener(dm_queue, self.host, self.port_out, StringPickler.ArbitraryObject, retry=True)
-        dm = dm_queue.get(timeout=5)
+        # dm_queue = Queue(180)  ## data manager
+        # listener = Listener(dm_queue, self.host, self.port_out, StringPickler.ArbitraryObject, retry=True)
+        dm = self.dm_queue.get(timeout=5)
 
         if dm['source'] == self.analyzer_source:
             if len(self.y) == self.window_points:  ## x-axis number
@@ -470,6 +486,14 @@ def plot_spectrum(self):
         print("error plot")
 
 
+def set_MFC2_flow(self, percentage=1.0):
+    if self.mfc100RadioButton.isChecked():
+        flow = float(self.tab1MFC100Combobox.currentText()) * percentage
+        func_mfc.set_mfc_100sccm(self, flow)
+    else:
+        flow = float(self.tab1MFC10Combobox.currentText()) * percentage
+        func_mfc.set_mfc_10sccm(self, flow)
+
 # start experiment, record time, no error check
 def start_exp(self):
     try:
@@ -514,15 +538,17 @@ def add_sample(self):
 
         ## get baseline 1:
         print('len baseline', len(self.baseline))
-        try:
-            baseline_before = self.baseline[:-20]
-        except:  # cheater to waive the 30-min baseline requirement
-            baseline_before = self.baseline[:-5]
+        if len(self.baseline) > 20:
+            baseline_before = self.baseline[:-10]
+        else:  # cheater to waive the 30-min baseline requirement
+            baseline_before = self.baseline
+            print('baseline_before = baseline')
 
         self.zero1 = np.mean(baseline_before)
         self.sigma1 = np.std(baseline_before)
 
-        print('zero1')
+        print('zero1, sample added:')
+        print(time.ctime(time.time()))
         print(self.zero1)
         print(self.sigma1)
 
@@ -543,23 +569,38 @@ def add_sample(self):
 
             # automation
             if self.automationCheckbox.isChecked():
-                # use half the set flow for start
-                if self.dropletRadioButton.isChecked():
-                    flow = float(self.tab1MFC100Combobox.currentText())/2
-                    func_mfc.set_mfc_100sccm(self, flow)
-                else:
-                    flow = float(self.tab1MFC10Combobox.currentText())/2
-                    func_mfc.set_mfc_10sccm(self, flow)
+                # use 20% of the set flow for start
+                set_MFC2_flow(self, 0.2)
+                # if self.mfc100RadioButton.isChecked():
+                #     flow = float(self.tab1MFC100Combobox.currentText())/5
+                #     func_mfc.set_mfc_100sccm(self, flow)
+                # else:
+                #     flow = float(self.tab1MFC10Combobox.currentText())/5
+                #     func_mfc.set_mfc_10sccm(self, flow)
 
-                self.auto_tag1 = 1
-                self.auto_tag2 = 0
-                self.auto_tag3 = 0
+                self.auto_tag1 = 1  # full flow
+                self.auto_tag2 = 0  # maximum flow
+                self.auto_tag3 = 0  # stop flow
+                # self.auto_tag4 = 0  # stop flow
                 self.timer_auto.start()
+                print("auto step1: set to 20% flow rate.")
+            else:
+                set_MFC2_flow(self)
+                # if self.mfc100RadioButton.isChecked():
+                #     flow = float(self.tab1MFC100Combobox.currentText())
+                #     func_mfc.set_mfc_100sccm(self, flow)
+                # else:
+                #     flow = float(self.tab1MFC10Combobox.currentText())
+                #     func_mfc.set_mfc_10sccm(self, flow)
+
+            self.automationCheckbox.setDisabled(True)
+
         else:
             self.note1 = "• Sample tank connected at %s:%s! Please run until baseline is stable.\n" \
-                         "Baseline std before: %.4E" % (t2, t3, self.sigma1)
+                         "Baseline std before: %.4f" % (t2, t3, self.sigma1)
         self.tab1ExperimentHint.setText(self.note1)
         save_parameter_R_time(self)
+
     except:
         self.tab1ExperimentHint.setText(' ! Error record add sample time.\n')
 
@@ -580,9 +621,9 @@ def update_endtime(self):
 def track_baseline1(self):
     try:
         zero2 = np.mean(self.baseline)
-        sigma2 = np.std(self.baseline)
+        sigma2 = float(np.std(self.baseline))
 
-        print('zero2', zero2, sigma2)
+        print('zero2, sigma2: ', zero2, sigma2)
         print(time.ctime(time.time()))
 
         if self.dropletRadioButton.isChecked():
@@ -591,11 +632,12 @@ def track_baseline1(self):
 
             if zero2 < self.zero1 + self.sigma1 * self.sample_sigma:  # record value on GUI
                 update_endtime(self)
+                print('dropped below')
                 self.tab1ExperimentHint.setText('• Concentration has dropped below baseline+%s sigma. You may end now\n'
-                                                'Baseline before: %.4E, now: %.4E' % (
-                                                    int(self.sample_sigma), self.zero1, zero2))
+                                         'Baseline before: %.4E, now: %.4f' % (self.sample_sigma, self.zero1, zero2))
+
                 # stop plot to save memory
-                self.timer.plot.stop()
+                self.timer_plot.stop()
 
         else:
             if self.expEndLineEdit.text() == "":
@@ -638,38 +680,61 @@ def track_baseline1(self):
 def track_loss(self):
     try:
         if self.auto_tag1:
-            dm_queue = Queue(180)  ## data manager
-            listener = Listener(dm_queue, self.host, self.port_out, StringPickler.ArbitraryObject, retry=True)
-            dm = dm_queue.get(timeout=5)
+            # dm_queue = Queue(180)  ## data manager
+            # listener = Listener(dm_queue, self.host, self.port_out, StringPickler.ArbitraryObject, retry=True)
+            loss = 0
 
-            for i in range(10):
+            for i in range(20):
+                dm = self.dm_queue.get(timeout=5)
                 if dm['source'] == ANALYZER_SOURCE2:
                     loss = int(dm['data']['max_loss'])
+                    print("loss", loss)
                     break
         
-        # avoid the spike, set to full flow rate after 10 min
-            if loss < 1000:
-                if self.mfc100RadioButton.isChecked():
-                    func_mfc.set_mfc_100sccm(self)
-                else:
-                    func_mfc.set_mfc_10sccm(self)
+        # avoid the spike, set to full flow rate after steps * 5min
+            if loss == 0:
+                self.tab1ExperimentHint.setText(" ! Error: no loss value.\n")
+            elif loss < 750:
+                set_MFC2_flow(self)
+                # if self.dropletRadioButton.isChecked():
+                #     flow = float(self.tab1MFC100Combobox.currentText())
+                #     func_mfc.set_mfc_100sccm(self, flow)
+                # else:
+                #     flow = float(self.tab1MFC10Combobox.currentText())
+                #     func_mfc.set_mfc_10sccm(self, flow)
+
                 self.auto_tag1 = 0
                 self.auto_tag2 = 1
+                print("auto step2: set to full flow rate.  ", time.ctime(time.time()))
+
             elif loss > 1500:
                 self.tab1ExperimentHint.setText(" ! Concentration too high, failed to automate the experiment.\n"
                                                 " Please leave it run, or reduce flow and try again.")
                 self.timer_auto.stop()
 
+        # if self.auto_tag2:
+        #     # set to full flow rate
+        #     if self.mfc100RadioButton.isChecked():
+        #         func_mfc.set_mfc_100sccm(self)
+        #     else:
+        #         func_mfc.set_mfc_10sccm(self)
+        #     self.auto_tag2 = 0
+        #     self.auto_tag3 = 1
+        # print("auto step3: set to full flow rate.  ", time.ctime(time.time()))
+
         # set to maximum flow after baseline drop to e-07 '3.016901661630596e-07'
         if self.auto_tag2:
-            concentration = self.y[-1]
-            if str(concentration)[-2:] == 'e-07':
+            # concentration = self.y[-1]
+            print(self.y[-1])
+            print(self.y[-1]+1)
+            if self.y[-1] < 5e-7 and self.y[-2] < 5e-7:
                 if self.dropletRadioButton.isChecked():
                     func_mfc.set_mfc_100sccm(self, 100)
                 else:
                     func_mfc.set_mfc_10sccm(self, 10)
                 self.auto_tag2 = 0
                 self.auto_tag3 = 1
+                print("auto step3: set to maximum flow rate for quick clean.  ", time.ctime(time.time()))
 
         # shut down gas flow after experiment ends
         if self.auto_tag3:
@@ -718,14 +783,20 @@ def end_exp(self):
         pass
 
     if self.automationCheckbox.isChecked():
-        func_mfc.set_mfc_1slpm(self, 0)
         func_mfc.stop_flow(self)
+        func_mfc.set_mfc_1slpm(self, 0)
     # enough time to get the most recent time from line_edit
     save_parameter_R(self)
     save_parameter_R_time(self)
 
+    # Enable, disable
     self.expEndButton.setEnabled(False)
     self.tab1CreateExpButton.setEnabled(True)
+    if self.dropletRadioButton.isChecked():
+        self.tankRadioButton.setEnabled(True)
+        self.automationCheckbox.setDisabled(False)
+    else:
+        self.dropletRadioButton.setEnabled(True)
 
 
 
