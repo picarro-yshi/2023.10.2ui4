@@ -260,6 +260,10 @@ def combo_study(self):
     if self.rowNumRadioButton.isChecked():
         try:
             row1 = int(self.row1LineEdit.text())
+        except:
+            pass
+
+        try:
             row2 = int(self.row2LineEdit.text())
         except:
             pass
@@ -272,9 +276,15 @@ def combo_study(self):
 
     try:
         range1 = int(self.comboRange1LineEdit.text())
+    except:
+        pass
+
+    try:
         range2 = int(self.comboRange2LineEdit.text())
     except:
         pass
+
+    print(row1, row2, range1, range2)
 
     cid = int(self.sampleCIDLineEdit.text())
     start_day = self.expStartLineEdit.text()  # '20211124'

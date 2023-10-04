@@ -782,9 +782,6 @@ def end_exp(self):
     except:
         pass
 
-    if self.automationCheckbox.isChecked():
-        func_mfc.stop_flow(self)
-        func_mfc.set_mfc_1slpm(self, 0)
     # enough time to get the most recent time from line_edit
     save_parameter_R(self)
     save_parameter_R_time(self)
@@ -798,7 +795,10 @@ def end_exp(self):
     else:
         self.dropletRadioButton.setEnabled(True)
 
-
+    if self.saveGasCheckbox.isChecked():
+        func_mfc.stop_flow(self)
+        func_mfc.set_mfc_1slpm(self, 0)
+        
 
 if __name__ == "__main__":
     # needs to comment out the import at top due to different parent directory

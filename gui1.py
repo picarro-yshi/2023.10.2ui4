@@ -423,7 +423,7 @@ class Window(QWidget):
 
     def createTab1ExperimentLayout(self):
         layout1 = QHBoxLayout()  # droplet or gas
-        self.MFCLayout = QHBoxLayout()  # MFC
+        self.MFCLayout = QVBoxLayout()  # MFC
         self.timeLayout = QHBoxLayout()  # time
         self.tab1ExperimentHint = QLabel(' \n ')
         self.tab1ExperimentHint.setStyleSheet(style.grey1())
@@ -483,7 +483,9 @@ class Window(QWidget):
 
     def createTab1MFCLayout(self):
         grid = QGridLayout()
+        layout = QHBoxLayout()
         self.MFCLayout.addLayout(grid)
+        self.MFCLayout.addLayout(layout)
 
         label1 = QLabel("Pressure (psi)")
         self.tab1PressureLabel = QLabel(" ")
@@ -549,13 +551,6 @@ class Window(QWidget):
 
         func_mfc.choose_100sccm(self)
 
-        self.automationCheckbox = QCheckBox("Automate the experiment.")
-        self.automationCheckbox.setToolTip("Check if you want to set the flows automatically.\n"
-                                           "Check/uncheck before click 'Add Sample' Button.")
-        self.automationCheckbox.setChecked(True)
-        self.mfcHintLabel = QLabel()
-        # self.mfcHintLabel.setStyleSheet(style.grey1())
-
         grid.addWidget(label1, 0, 0)
         grid.addWidget(self.tab1PressureLabel, 0, 1)
         # grid.addWidget(gap, 0, 2)
@@ -579,9 +574,24 @@ class Window(QWidget):
         grid.addWidget(self.tab1MFC10Combobox, 3, 3)
         grid.addWidget(self.tab1MFC10Button, 3, 4)
 
-        grid.addWidget(self.automationCheckbox, 4, 0, 1, 2)
-        grid.addWidget(self.mfcHintLabel, 4, 3, 1, 2)
+        # grid.addWidget(self.automationCheckbox, 4, 0, 1, 2)
+        # grid.addWidget(self.mfcHintLabel, 4, 3, 1, 2)
+        
+        self.automationCheckbox = QCheckBox("Automate the experiment.")
+        self.automationCheckbox.setToolTip("Check if you want to set the flows automatically.\n"
+                                           "Check/uncheck before click 'Add Sample' Button.")
+        self.automationCheckbox.setChecked(True)
+        
+        self.saveGasCheckbox = QCheckBox("Save N2")
+        self.saveGasCheckbox.setToolTip("Shut off dilution and bubble lines\nwhen experiment ends\nto save N2 gas.")
 
+        self.mfcHintLabel = QLabel()
+        # self.mfcHintLabel.setStyleSheet(style.grey1())
+
+        layout.addWidget(self.automationCheckbox)
+        layout.addWidget(self.saveGasCheckbox)
+        layout.addWidget(self.mfcHintLabel)
+        
 
     # 4 round buttons
     def createTab1TimeLayout(self):
