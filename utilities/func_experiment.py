@@ -212,8 +212,8 @@ def create_experiment(self):
 
         try:
             # data manager
-            self.dm_queue = Queue(180)  ## data manager
-            listener = Listener(self.dm_queue, self.host, self.port_out, StringPickler.ArbitraryObject, retry=True)
+            # dm_queue = Queue(180)  ## data manager
+            # listener = Listener(dm_queue, self.host, self.port_out, StringPickler.ArbitraryObject, retry=True)
             self.timer_data.start()
             print('data manager timer started')
 
@@ -383,9 +383,9 @@ def save_parameter_R_time(self):
 
 def data_manager(self):
     try:
-        # dm_queue = Queue(180)  ## data manager
-        # listener = Listener(dm_queue, self.host, self.port_out, StringPickler.ArbitraryObject, retry=True)
-        dm = self.dm_queue.get(timeout=5)
+        dm_queue = Queue(120)  ## data manager
+        listener = Listener(dm_queue, self.host, self.port_out, StringPickler.ArbitraryObject, retry=True)
+        dm = dm_queue.get(timeout=5)
 
         if dm['source'] == self.analyzer_source:
             if len(self.y) == self.window_points:  ## x-axis number
@@ -538,10 +538,10 @@ def add_sample(self):
 
         ## get baseline 1:
         print('len baseline', len(self.baseline))
-        if len(self.baseline) > 20:
-            baseline_before = self.baseline[:-10]
+        if len(self.baseline) > 25:
+            baseline_before = self.baseline[10:-10]
         else:  # cheater to waive the 30-min baseline requirement
-            baseline_before = self.baseline
+            baseline_before = self.baseline[5:]
             print('baseline_before = baseline')
 
         self.zero1 = np.mean(baseline_before)
@@ -680,12 +680,12 @@ def track_baseline1(self):
 def track_loss(self):
     try:
         if self.auto_tag1:
-            # dm_queue = Queue(180)  ## data manager
-            # listener = Listener(dm_queue, self.host, self.port_out, StringPickler.ArbitraryObject, retry=True)
+            dm_queue = Queue(180)  ## data manager
+            listener = Listener(dm_queue, self.host, self.port_out, StringPickler.ArbitraryObject, retry=True)
             loss = 0
 
-            for i in range(20):
-                dm = self.dm_queue.get(timeout=5)
+            for i in range(10):
+                dm = dm_queue.get(timeout=5)
                 if dm['source'] == ANALYZER_SOURCE2:
                     loss = int(dm['data']['max_loss'])
                     print("loss", loss)
@@ -725,9 +725,8 @@ def track_loss(self):
         # set to maximum flow after baseline drop to e-07 '3.016901661630596e-07'
         if self.auto_tag2:
             # concentration = self.y[-1]
-            print(self.y[-1])
-            print(self.y[-1]+1)
-            if self.y[-1] < 5e-7 and self.y[-2] < 5e-7:
+            # print('concentration: ', self.y[-1])
+            if self.y[-10] < 5e-7:
                 if self.dropletRadioButton.isChecked():
                     func_mfc.set_mfc_100sccm(self, 100)
                 else:
@@ -795,9 +794,12 @@ def end_exp(self):
     else:
         self.dropletRadioButton.setEnabled(True)
 
+if self.dropletRadioButton.isChecked():
     if self.saveGasCheckbox.isChecked():
         func_mfc.stop_flow(self)
         func_mfc.set_mfc_1slpm(self, 0)
+        func_mfc.stop_send_MFC_data(self)
+
         
 
 if __name__ == "__main__":
