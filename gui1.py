@@ -1,20 +1,20 @@
 ## VOC Automation: Calibration, experiment and calculation
-## Yilin Shi | Picarro | last update: 2023.10.1
+## Yilin Shi | Picarro | last update: 2023.10.5
 
 # ----- constants -------
 PORT_IN = 50070  ## backdoor, send data to fitter on analyzer
 PORT_OUT = 40060  ## listener, get data from analyzer
-ANALYZER_SRC = 'analyze_VOC_broadband'  ## listener data key
+ANALYZER_SRC = "analyze_VOC_broadband"  ## listener data key
 MFC_REFRESH_TIME = 2000  # ms
 PLOT_REFRESH_TIME = 2000  # ms
 DATA_RECEIVE_TIME = 10000  # ms
 
 # ------------
-
 import sys, os
 import time
 
 import platform
+
 opsystem = platform.system()  # 'Linux', 'Windows', 'Darwin'
 print(opsystem)
 
@@ -41,7 +41,6 @@ from PyQt6.QtWidgets import (
     QCheckBox,
     QPushButton,
     QButtonGroup,
-
 )
 from pyqtgraph import PlotWidget
 import pyqtgraph as pg
@@ -49,17 +48,17 @@ import pyqtgraph as pg
 import style
 from utilities import (
     func_analyzer,
-    func_mfc, 
-    func_calibration, 
-    func_experiment, 
+    func_mfc,
+    func_calibration,
+    func_experiment,
     func_scale,
     load_par,
 )
 
-
 MINUTE = [str(i).zfill(2) for i in range(60)]
 HOUR = [str(i).zfill(2) for i in range(24)]
-COMBOKEYS = ['partial_fit', 'absorbance', 'model', 'residuals']
+COMBOKEYS = ["partial_fit", "absorbance", "model", "residuals"]
+
 
 class Window(QWidget):
     def __init__(self):
@@ -67,9 +66,9 @@ class Window(QWidget):
         self.setWindowTitle("VOC Calibration")
 
         self.setGeometry(350, 50, 1200, 800)
-        if opsystem == 'Darwin':
+        if opsystem == "Darwin":
             self.setMinimumSize(1200, 880)
-        elif opsystem == 'Windows':
+        elif opsystem == "Windows":
             self.setFixedSize(1100, 800)
         else:
             self.setMinimumSize(1200, 800)
@@ -78,39 +77,39 @@ class Window(QWidget):
         self.timers()
         self.set_window_layout()
 
-            
     def constants(self):
         self.port_in = PORT_IN
         self.port_out = PORT_OUT
         self.analyzer_source = ANALYZER_SRC
         # self.refresh_mfc = MFC_REFRESH_TIME
         # self.refresh_plot = PLOT_REFRESH_TIME
-        
+
     def timers(self):
         self.timer_scale = QTimer()
         self.timer_scale.setInterval(PLOT_REFRESH_TIME)
         self.timer_scale.timeout.connect(lambda: func_scale.scale_plot(self))
-        
+
         self.timer_plot = QTimer()
         self.timer_plot.setInterval(PLOT_REFRESH_TIME)
         self.timer_plot.timeout.connect(lambda: func_experiment.plot_spectrum(self))
-        
+
         self.timer_mfc = QTimer()
         self.timer_mfc.setInterval(MFC_REFRESH_TIME)
         self.timer_mfc.timeout.connect(lambda: func_mfc.sendMFC(self))
-        
+
         self.timer_baseline = QTimer()
         self.timer_baseline.setInterval(600000)  # ms, check baseline every 10 mins
-        self.timer_baseline.timeout.connect(lambda: func_experiment.track_baseline1(self))
-        
+        self.timer_baseline.timeout.connect(
+            lambda: func_experiment.track_baseline1(self)
+        )
+
         self.timer_data = QTimer()
         self.timer_data.setInterval(DATA_RECEIVE_TIME)  # data manager
         self.timer_data.timeout.connect(lambda: func_experiment.data_manager(self))
-        
+
         self.timer_auto = QTimer()
         self.timer_auto.setInterval(300000)  # ms, check loss every 5 mins
         self.timer_auto.timeout.connect(lambda: func_experiment.track_loss(self))
-
 
     def set_window_layout(self):
         self.mainlayout()
@@ -132,7 +131,7 @@ class Window(QWidget):
         tabs.addTab(self.tab1, "     ⬥ Experiment Settings     ")
         tabs.addTab(self.tab2, "  ⬥ Spectrum Viewer Real Time  ")
         tabs.addTab(self.tab3, "     ⬥ Hardware Detection      ")
-        # self.tab1.setStyleSheet('QTabBar::tab: selected { font-size: 18px; font-family: Courier; }')
+
         mainLayout.addWidget(tabs)
         self.setLayout(mainLayout)
         self.show()
@@ -204,39 +203,35 @@ class Window(QWidget):
         self.createTab1ExperimentLayout()
         self.createTab1CalibrationLayout()
 
-
     def createTab1LogoLayout(self):
         logo = QLabel()
-        pixmap = QPixmap('icons/picarro.png')
+        pixmap = QPixmap("icons/picarro.png")
         logo.setPixmap(
-            pixmap.scaled(250, 250, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.FastTransformation))
+            pixmap.scaled(
+                250,
+                250,
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.FastTransformation,
+            )
+        )
         logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        version = QLabel('Yilin Shi | Version 4.0 | Fall 2023 | Santa Clara, CA    ')
-        if opsystem == 'Darwin':
+        version = QLabel("Yilin Shi | Version 4.0 | Fall 2023 | Santa Clara, CA    ")
+        if opsystem == "Darwin":
             vfont = 10
-        elif opsystem == 'Windows':
+        elif opsystem == "Windows":
             vfont = 8
         else:
             vfont = 10
-        version.setFont(QFont('Arial', vfont))
+        version.setFont(QFont("Arial", vfont))
         version.setAlignment(Qt.AlignmentFlag.AlignRight)
-
-        # label0 = QLabel('Select data key for plot:')
-        # self.datakeyCombobox = QComboBox(self)
-        # label0 = QLabel("Data key for plot:")
-        # layout_key = QHBoxLayout()
 
         self.plotCheckbox = QCheckBox("Plot data key:")
         self.plotCheckbox.setChecked(True)
-        self.plotCheckbox.setToolTip('Check if you want tab2 plot to start.')
+        self.plotCheckbox.setToolTip("Check if you want plot on tab 2 to start.")
         self.datakeyLabel = QLabel("broadband_gasConcs_[CID]")
         self.tab1Layout1Hint = QLabel()
         layout0 = QHBoxLayout()
-
-        # button_key = QPushButton()
-        # layout_key.addWidget(self.datakeyLabel)
-        # layout_key.addWidget(button_key)
 
         self.tab1LogoLayout.addWidget(logo)
         self.tab1LogoLayout.addWidget(version)
@@ -258,25 +253,16 @@ class Window(QWidget):
         layout0.addStretch()
         layout0.addLayout(layout4)
 
-        # button1 = QToolButton()
-        # button1.setIcon(QIcon("icons/list2.png"))
-        # button1.setIconSize(QSize(40, 40))
-        # button1.setToolTip("Get data key of current sample for plot.")
-        # # button1.clicked.connect(self.get_key)
-        # button1.clicked.connect(lambda: func_experiment.update_key(self))
-        # label1 = QLabel('Update Key')
-        # 
-        # layout1.addWidget(button1)
-        # layout1.addWidget(label1)
-
         self.sendMFCButton = QToolButton()
         self.sendMFCButton.setIcon(QIcon("icons/arrow.png"))
         self.sendMFCButton.setIconSize(QSize(40, 40))
-        self.sendMFCButton.setToolTip("Send MFC data to the analyzer\nso it will show up in the\n"
-                                      "'Data Key' of the analyzer GUI\nSelect MFC2 before click it.")
-        # self.sendMFCButton.clicked.connect(self.send_MFC_data)
+        self.sendMFCButton.setToolTip(
+            "Send MFC data to the analyzer\nso it will show up in the\n"
+            "'Data Key' of the analyzer GUI\nSelect MFC2 before click it."
+        )
+        # self.sendMFCButton.clicked.connect(self.send_MFC_data)  # if function in the same file
         self.sendMFCButton.clicked.connect(lambda: func_mfc.send_MFC_data(self))
-        label2 = QLabel('Send MFC')
+        label2 = QLabel("Send MFC")
 
         layout2.addWidget(self.sendMFCButton)
         layout2.addWidget(label2)
@@ -285,10 +271,11 @@ class Window(QWidget):
         self.stopSendMFCButton.setIcon(QIcon("icons/stop2.jpg"))
         self.stopSendMFCButton.setIconSize(QSize(40, 40))
         self.stopSendMFCButton.setToolTip("Stop sending MFC data to the analyzer")
-        # self.stopSendMFCButton.clicked.connect(self.stop_send_MFC_data)
-        self.stopSendMFCButton.clicked.connect(lambda: func_mfc.stop_send_MFC_data(self))
+        self.stopSendMFCButton.clicked.connect(
+            lambda: func_mfc.stop_send_MFC_data(self)
+        )
         self.stopSendMFCButton.setEnabled(False)
-        label3 = QLabel('Stop Send MFC')
+        label3 = QLabel("Stop Send MFC")
 
         layout3.addWidget(self.stopSendMFCButton)
         layout3.addWidget(label3)
@@ -298,7 +285,7 @@ class Window(QWidget):
         button2.setIconSize(QSize(40, 40))
         button2.setToolTip("Close VOC Calibration GUI Window")
         button2.clicked.connect(self.exitFunc)
-        label4 = QLabel('  Close')
+        label4 = QLabel("  Close")
 
         layout4.addWidget(button2)
         layout4.addWidget(label4)
@@ -318,16 +305,18 @@ class Window(QWidget):
 
         # left part
         self.weightLabel = QLabel("0.00000")
-        self.weightLabel.setFont(QFont('Times', 24))
+        self.weightLabel.setFont(QFont("Times", 24))
         self.weightLabel.setStyleSheet("background-color: white")
-        self.weightLabel.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.weightLabel.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse
+        )
         label1 = QLabel("g  ")
 
         layout11.addWidget(self.weightLabel, 90)
         layout11.addWidget(label1, 10)
 
         label2 = QLabel("Time (sec):")
-        self.scaleTimeLineEdit = QLineEdit('180')
+        self.scaleTimeLineEdit = QLineEdit("180")
         self.scaleTimeLineEdit.setToolTip("Weigh sample for a time (in seconds).")
         self.scaleTimeLineEdit.setStyleSheet(style.grey1())
 
@@ -348,9 +337,11 @@ class Window(QWidget):
         self.scaleStartButton = QToolButton()
         self.scaleStartButton.setIcon(QIcon("icons/start1.png"))
         self.scaleStartButton.setIconSize(QSize(40, 40))
-        self.scaleStartButton.setToolTip("Continuously measure and plot weight for a time")
+        self.scaleStartButton.setToolTip(
+            "Continuously measure and plot weight for a time"
+        )
         self.scaleStartButton.clicked.connect(lambda: func_scale.scale_reading(self))
-        label5 = QLabel('   Start')
+        label5 = QLabel("   Start")
 
         layout5.addWidget(self.scaleStartButton)
         layout5.addWidget(label5)
@@ -360,7 +351,7 @@ class Window(QWidget):
         button2.setIconSize(QSize(40, 40))
         button2.setToolTip("Get current weight measurement")
         button2.clicked.connect(lambda: func_scale.scale_weigh(self))
-        label6 = QLabel('  Weigh')
+        label6 = QLabel("  Weigh")
 
         layout6.addWidget(button2)
         layout6.addWidget(label6)
@@ -371,7 +362,6 @@ class Window(QWidget):
         # self.ScaleRealTimeLabel.setWordWrap(True)
         layout4.addWidget(label3)
         layout4.addWidget(self.ScaleRealTimeLabel)
-
 
     def createTab1SampleLayout(self):
         grid = QGridLayout()  # 4 columns grid
@@ -396,12 +386,16 @@ class Window(QWidget):
 
         self.sampleSigmaCombobox = QComboBox()  # zero 2 < zero1 + pct*sigma
         self.sampleSigmaCombobox.addItems(["4", "1", "2", "3", "5", "6", "8", "10"])
-        self.sampleSigmaCombobox.setToolTip('When baseline after the peak is n*σ \n'
-                            'higher than the baseline before the peak,\n'
-                            'end the experiment.')
+        self.sampleSigmaCombobox.setToolTip(
+            "When baseline after the peak is n*σ \n"
+            "higher than the baseline before the peak,\n"
+            "end the experiment."
+        )
 
         self.sampleTankConcLineEdit = QLineEdit()
-        self.sampleTankConcLineEdit.setToolTip('Gas tank concentration, ppm\nfound on tank label.')
+        self.sampleTankConcLineEdit.setToolTip(
+            "Gas tank concentration, ppm\nfound on tank label."
+        )
         self.sampleTankConcLineEdit.setDisabled(True)
 
         grid.addWidget(label1, 0, 0, 1, 1)  # R drive
@@ -420,12 +414,11 @@ class Window(QWidget):
         grid.addWidget(self.tankTitleLabel, 7, 0, 1, 2)  # tank conc
         grid.addWidget(self.sampleTankConcLineEdit, 7, 2, 1, 2)  # tank conc
 
-
     def createTab1ExperimentLayout(self):
         layout1 = QHBoxLayout()  # droplet or gas
         self.MFCLayout = QVBoxLayout()  # MFC
         self.timeLayout = QHBoxLayout()  # time
-        self.tab1ExperimentHint = QLabel(' \n ')
+        self.tab1ExperimentHint = QLabel(" \n ")
         self.tab1ExperimentHint.setStyleSheet(style.grey1())
 
         self.tab1ExperimentLayout.addLayout(layout1)
@@ -439,11 +432,15 @@ class Window(QWidget):
         # droplet or tank
         self.dropletRadioButton = QRadioButton("Droplet Test", self)
         self.tankRadioButton = QRadioButton("Gas Tank Test", self)
-        self.dropletRadioButton.setChecked(True)  ## follow immediate after all radiobutton, otherwise python clapse
-        self.dropletRadioButton.setStyleSheet('color: red')
-        self.tankRadioButton.setStyleSheet('color: black')
+        self.dropletRadioButton.setChecked(
+            True
+        )  ## follow immediately after all radiobutton, otherwise python crash
+        self.dropletRadioButton.setStyleSheet("color: red")
+        self.tankRadioButton.setStyleSheet("color: black")
 
-        self.dropletRadioButton.toggled.connect(lambda: func_experiment.choose_droplet(self))
+        self.dropletRadioButton.toggled.connect(
+            lambda: func_experiment.choose_droplet(self)
+        )
         self.tankRadioButton.toggled.connect(lambda: func_experiment.choose_tank(self))
 
         self.bg1 = QButtonGroup()
@@ -451,35 +448,28 @@ class Window(QWidget):
         self.bg1.addButton(self.tankRadioButton)
 
         self.aqCheckbox = QCheckBox("(aq)")
-        self.aqCheckbox.setToolTip('Check if this is an aqueous droplet')
+        self.aqCheckbox.setToolTip("Check if this is an aqueous droplet")
 
         # create experiment
         self.tab1CreateExpButton = QPushButton("Create Exp.", self)
-        # self.tab1CreateExpButton.clicked.connect(self.create_experiment)
-        self.tab1CreateExpButton.clicked.connect(lambda: func_experiment.create_experiment(self))
+        self.tab1CreateExpButton.clicked.connect(
+            lambda: func_experiment.create_experiment(self)
+        )
         self.tab1CreateExpButton.setStyleSheet("font: bold")
-        self.tab1CreateExpButton.setToolTip("Create a folder named with today's date\n"
-                            "+suffix (if needed) on the R drive,\n"
-                            "for a new experiment and store parameters.")
+        self.tab1CreateExpButton.setToolTip(
+            "Create a folder named with today's date\n"
+            "+suffix (if needed) on the R drive,\n"
+            "for a new experiment and store parameters."
+        )
 
         layout1.addWidget(self.dropletRadioButton)
         layout1.addWidget(self.aqCheckbox)
         layout1.addWidget(self.tankRadioButton)
         layout1.addWidget(self.tab1CreateExpButton)
 
-        # self.tab1AbandonExpButton = QPushButton("Abandon Current Exp.", self)
-        # self.tab1AbandonExpButton.clicked.connect(self.tab1_terminate_exp)
-        # self.tab1AbandonExpButton.setStyleSheet("font: bold")
-        # self.tab1AbandonExpButton.setToolTip("Abandon current experiment without saving data.\n")
-        # self.tab1AbandonExpButton.setEnabled(False)
-        #
-        # layout2.addWidget(self.tab1CreateExpButton)
-        # layout2.addWidget(self.tab1AbandonExpButton)
-
         self.createTab1MFCLayout()
         self.createTab1TimeLayout()
         func_experiment.choose_droplet(self)
-
 
     def createTab1MFCLayout(self):
         grid = QGridLayout()
@@ -487,6 +477,7 @@ class Window(QWidget):
         self.MFCLayout.addLayout(grid)
         self.MFCLayout.addLayout(layout)
 
+        # grid
         label1 = QLabel("Pressure (psi)")
         self.tab1PressureLabel = QLabel(" ")
         self.tab1PressureLabel.setStyleSheet(style.grey1())
@@ -501,16 +492,19 @@ class Window(QWidget):
         self.tab1MFC1Label = QLabel("     ")
         self.tab1MFC1Label.setStyleSheet(style.grey1())
         self.tab1MFC1Label.setFixedWidth(70)
-        self.tab1MFC1LineEdit = QLineEdit('0.95')
-        self.tab1MFC1Label.setToolTip('Dilution line\n1 SLPM Alicat')
+        self.tab1MFC1LineEdit = QLineEdit("0.95")
+        self.tab1MFC1Label.setToolTip("Dilution line\n1 SLPM Alicat")
         self.tab1MFC1Button = QPushButton("  Set  ")
-        # self.tab1MFC1Button.clicked.connect(self.set_mfc_1slpm)
         self.tab1MFC1Button.clicked.connect(lambda: func_mfc.set_mfc_1slpm(self))
 
         self.mfc100RadioButton = QRadioButton("MFC2 (100 SCCM)", self)
-        self.mfc100RadioButton.setToolTip("valve mask 0\n! Please set up manually on analyzer")
+        self.mfc100RadioButton.setToolTip(
+            "valve mask 0\n! Please set up manually on analyzer"
+        )
         self.mfc10RadioButton = QRadioButton("MFC2 (10 SCCM)", self)
-        self.mfc10RadioButton.setToolTip("valve mask 1\n! Please set up manually on analyzer")
+        self.mfc10RadioButton.setToolTip(
+            "valve mask 1\n! Please set up manually on analyzer"
+        )
         self.mfc100RadioButton.setChecked(True)
 
         self.mfc100RadioButton.toggled.connect(lambda: func_mfc.choose_100sccm(self))
@@ -525,16 +519,16 @@ class Window(QWidget):
         self.tab1MFC100Label.setFixedWidth(70)
 
         self.tab1MFC100Combobox = QComboBox()
-        self.tab1MFC100Combobox.addItems(["50", "5", "10", "20", "40", "60", "80", "100"])
+        self.tab1MFC100Combobox.addItems(
+            ["50", "5", "10", "20", "40", "60", "80", "100"]
+        )
         self.tab1MFC100Combobox.setEditable(True)
-        self.tab1MFC100Combobox.setToolTip('Bubble line\n100 SCCM Alicat')
+        self.tab1MFC100Combobox.setToolTip("Bubble line\n100 SCCM Alicat")
 
         self.tab1MFC100Button = QPushButton("  Set  ", self)
         self.tab1MFC100Button.setStyleSheet("font: bold")
-        # self.tab1MFC100Button.clicked.connect(self.set_mfc_100sccm)
         self.tab1MFC100Button.clicked.connect(lambda: func_mfc.set_mfc_100sccm(self))
 
-        # label5 = QLabel("MFC2 (10 SCCM)")
         self.tab1MFC10Label = QLabel(" ")
         self.tab1MFC10Label.setStyleSheet(style.grey1())
         self.tab1MFC10Label.setFixedWidth(70)
@@ -542,11 +536,10 @@ class Window(QWidget):
         self.tab1MFC10Combobox = QComboBox()
         self.tab1MFC10Combobox.addItems(["1", "0.1", "0.2", "0.5", "2", "5", "10"])
         self.tab1MFC10Combobox.setEditable(True)
-        self.tab1MFC10Combobox.setToolTip('Bubble line\n10 SCCM Alicat')
+        self.tab1MFC10Combobox.setToolTip("Bubble line\n10 SCCM Alicat")
 
         self.tab1MFC10Button = QPushButton("  Set  ", self)
         self.tab1MFC10Button.setStyleSheet("font: bold")
-        # self.tab1MFC10Button.clicked.connect(self.set_mfc_10sccm)
         self.tab1MFC10Button.clicked.connect(lambda: func_mfc.set_mfc_10sccm(self))
 
         func_mfc.choose_100sccm(self)
@@ -562,28 +555,28 @@ class Window(QWidget):
         grid.addWidget(self.tab1MFC1LineEdit, 1, 3)
         grid.addWidget(self.tab1MFC1Button, 1, 4)
 
-        # grid.addWidget(label4, 3, 0)
         grid.addWidget(self.mfc100RadioButton, 2, 0)
         grid.addWidget(self.tab1MFC100Label, 2, 1)
         grid.addWidget(self.tab1MFC100Combobox, 2, 3)
         grid.addWidget(self.tab1MFC100Button, 2, 4)
 
-        # grid.addWidget(label5, 4, 0)
         grid.addWidget(self.mfc10RadioButton, 3, 0)
         grid.addWidget(self.tab1MFC10Label, 3, 1)
         grid.addWidget(self.tab1MFC10Combobox, 3, 3)
         grid.addWidget(self.tab1MFC10Button, 3, 4)
 
-        # grid.addWidget(self.automationCheckbox, 4, 0, 1, 2)
-        # grid.addWidget(self.mfcHintLabel, 4, 3, 1, 2)
-        
+        # layout
         self.automationCheckbox = QCheckBox("Automate the experiment.")
-        self.automationCheckbox.setToolTip("Check if you want to set the flows automatically.\n"
-                                           "Check/uncheck before click 'Add Sample' Button.")
+        self.automationCheckbox.setToolTip(
+            "Set the flows automatically.\n"
+            "take effect only before\nclick the 'Add Sample' Button."
+        )
         self.automationCheckbox.setChecked(True)
-        
+
         self.saveGasCheckbox = QCheckBox("Save N2")
-        self.saveGasCheckbox.setToolTip("Shut off dilution and bubble lines\nwhen experiment ends\nto save N2 gas.")
+        self.saveGasCheckbox.setToolTip(
+            "Shut off dilution and bubble lines\nwhen experiment ends\nto save N2 gas."
+        )
 
         self.mfcHintLabel = QLabel()
         # self.mfcHintLabel.setStyleSheet(style.grey1())
@@ -591,7 +584,6 @@ class Window(QWidget):
         layout.addWidget(self.automationCheckbox)
         layout.addWidget(self.saveGasCheckbox)
         layout.addWidget(self.mfcHintLabel)
-        
 
     # 4 round buttons
     def createTab1TimeLayout(self):
@@ -631,11 +623,13 @@ class Window(QWidget):
         self.expStartButton.setIconSize(QSize(40, 40))
         self.expStartButton.clicked.connect(lambda: func_experiment.start_exp(self))
         self.expStartButton.setEnabled(False)
-        label1 = QLabel('Start Exp.')
+        label1 = QLabel("Start Exp.")
         label1.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        self.expStartLineEdit = QLineEdit('')  # 20220222' start
-        self.expStartLineEdit.setToolTip('Experiment start date.\n(Used as folder name)\nFormat: yyyymmdd.')
+        self.expStartLineEdit = QLineEdit("")  # 20220222' start
+        self.expStartLineEdit.setToolTip(
+            "Experiment start date.\n(Used as folder name)\nFormat: yyyymmdd."
+        )
         self.expStartCombobox1 = QComboBox()  # '08'
         self.expStartCombobox1.addItems(HOUR)
         self.expStartCombobox2 = QComboBox()  # '11'
@@ -653,12 +647,14 @@ class Window(QWidget):
         self.mfcStopButton.setIcon(QIcon("icons/zero.png"))
         self.mfcStopButton.setIconSize(QSize(40, 40))
         self.mfcStopButton.setToolTip("Stop Alicat flow.")
-        self.mfcStopButton.clicked.connect(lambda: func_mfc.stop_flow(self))
-        label2 = QLabel('Stop Flow')
+        self.mfcStopButton.clicked.connect(lambda: func_mfc.stop_mfc2_flow(self))
+        label2 = QLabel("Stop Flow")
         label2.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        self.expSuffix = QLineEdit('')  # '' suffix
-        self.expSuffix.setToolTip('(Optional) Add a suffix to\nthe start date as the folder name.')
+        self.expSuffix = QLineEdit("")  # '' suffix
+        self.expSuffix.setToolTip(
+            "(Optional) Add a suffix to\nthe start date as the folder name."
+        )
         label20 = QLabel("  (suffix)")
 
         layout2.addWidget(self.mfcStopButton)
@@ -671,14 +667,13 @@ class Window(QWidget):
         self.expAddButton = QToolButton()
         self.expAddButton.setIcon(QIcon("icons/droplet2.png"))
         self.expAddButton.setIconSize(QSize(40, 40))
-        # self.expAddButton.clicked.connect(self.add_sample)
         self.expAddButton.clicked.connect(lambda: func_experiment.add_sample(self))
         self.expAddButton.setEnabled(False)
-        label3 = QLabel('Add Sample')
+        label3 = QLabel("Add Sample")
         label3.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        self.expAddLineEdit = QLineEdit('')  # 20220222' add
-        self.expAddLineEdit.setToolTip('Date when sample is added.\nFormat: yyyymmdd')
+        self.expAddLineEdit = QLineEdit("")  # 20220222' add
+        self.expAddLineEdit.setToolTip("Date when sample is added.\nFormat: yyyymmdd")
         self.expAddCombobox1 = QComboBox()  # '09'
         self.expAddCombobox1.addItems(HOUR)
         self.expAddCombobox2 = QComboBox()  # '11'
@@ -695,17 +690,19 @@ class Window(QWidget):
         self.expEndButton = QToolButton()
         self.expEndButton.setIcon(QIcon("icons/stop1.png"))
         self.expEndButton.setIconSize(QSize(40, 40))
-        self.expEndButton.setToolTip("End this experiment.\n"
-                                     "Record current time or\n your input time as the end time.\n\n"
-                                     "All parameters will be saved again.\n"
-                                     "(make changes as needed before click this button).")
+        self.expEndButton.setToolTip(
+            "End this experiment.\n"
+            "Record current time or\n your input time as the end time.\n\n"
+            "All parameters will be saved again.\n"
+            "(make changes as needed before click this button)."
+        )
         self.expEndButton.clicked.connect(lambda: func_experiment.end_exp(self))
         self.expEndButton.setEnabled(False)
-        label4 = QLabel('End Exp.')
+        label4 = QLabel("End Exp.")
         label4.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        self.expEndLineEdit = QLineEdit('')  # 20220222' end
-        self.expEndLineEdit.setToolTip('Date when experiment ends.\nFormat: yyyymmdd')
+        self.expEndLineEdit = QLineEdit("")  # 20220222' end
+        self.expEndLineEdit.setToolTip("Date when experiment ends.\nFormat: yyyymmdd")
         self.expEndCombobox1 = QComboBox()  # '23'
         self.expEndCombobox1.addItems(HOUR)
         self.expEndCombobox2 = QComboBox()  # '59'
@@ -717,7 +714,6 @@ class Window(QWidget):
         layout4.addWidget(self.expEndCombobox1)
         layout4.addWidget(self.expEndCombobox2)
         layout4.addStretch()
-
 
     def createTab1CalibrationLayout(self):
         layoutTop = QVBoxLayout()
@@ -732,7 +728,9 @@ class Window(QWidget):
         layout_calbutton = QHBoxLayout()
         self.tab1CalHintLabel = QLabel(" ")
         self.tab1CalHintLabel.setStyleSheet(style.grey1())
-        self.tab1CalHintLabel.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.tab1CalHintLabel.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse
+        )
 
         layoutTop.addLayout(layout1)
         layoutTop.addLayout(layout2)
@@ -757,7 +755,9 @@ class Window(QWidget):
         label3 = QLabel("Combo Log Row #:")
         self.oneComboNumLineEdit = QLineEdit()
         self.oneComboNumLineEdit.setFixedWidth(50)
-        self.oneComboNumLineEdit.setToolTip("Optional, default to 500.\ninteger between 0 and Maximal.")
+        self.oneComboNumLineEdit.setToolTip(
+            "Optional, default to 500.\ninteger between 0 and Maximal."
+        )
         label4 = QLabel("Maximal: ")
         self.maxRowLabel = QLabel("     ")
 
@@ -767,6 +767,7 @@ class Window(QWidget):
         layout3.addWidget(label4)
         layout3.addWidget(self.maxRowLabel)
 
+        # 4 round buttons
         layout11 = QVBoxLayout()
         layout12 = QVBoxLayout()
         layout13 = QVBoxLayout()
@@ -779,9 +780,13 @@ class Window(QWidget):
         self.tab1LoadExpButton = QToolButton()
         self.tab1LoadExpButton.setIcon(QIcon("icons/list2.png"))
         self.tab1LoadExpButton.setIconSize(QSize(40, 40))
-        self.tab1LoadExpButton.setToolTip("Fill in the start date (+suffix) to \nload parameters for this experiment.")
-        self.tab1LoadExpButton.clicked.connect(lambda: func_calibration.load_experiment(self))
-        label11 = QLabel('Load Exp.')
+        self.tab1LoadExpButton.setToolTip(
+            "Fill in the start date (+suffix) to \nload parameters for this experiment."
+        )
+        self.tab1LoadExpButton.clicked.connect(
+            lambda: func_calibration.load_experiment(self)
+        )
+        label11 = QLabel("Load Exp.")
 
         layout11.addWidget(self.tab1LoadExpButton)
         layout11.addWidget(label11)
@@ -790,9 +795,11 @@ class Window(QWidget):
         self.tab1CalculateButton.setIcon(QIcon("icons/start1.png"))
         self.tab1CalculateButton.setIconSize(QSize(40, 40))
         self.tab1CalculateButton.setToolTip("Calculate the Calibration factor.")
-        self.tab1CalculateButton.clicked.connect(lambda: func_calibration.calculate(self))
+        self.tab1CalculateButton.clicked.connect(
+            lambda: func_calibration.calculate(self)
+        )
         self.tab1CalculateButton.setEnabled(False)
-        label12 = QLabel('Calculate')
+        label12 = QLabel("Calculate")
 
         layout12.addWidget(self.tab1CalculateButton)
         layout12.addWidget(label12)
@@ -801,9 +808,11 @@ class Window(QWidget):
         self.PlotOneComboButton.setIcon(QIcon("icons/plot1.png"))
         self.PlotOneComboButton.setIconSize(QSize(40, 40))
         self.PlotOneComboButton.setToolTip("Plot Combo spectrum\nfor a particular row.")
-        self.PlotOneComboButton.clicked.connect(lambda: func_calibration.plot_one_combo(self))
+        self.PlotOneComboButton.clicked.connect(
+            lambda: func_calibration.plot_one_combo(self)
+        )
         self.PlotOneComboButton.setEnabled(False)
-        label13 = QLabel('Plot Combo')
+        label13 = QLabel("Plot Combo")
 
         layout13.addWidget(self.PlotOneComboButton)
         layout13.addWidget(label13)
@@ -812,24 +821,23 @@ class Window(QWidget):
         self.tab1ClosePlotButton.setIcon(QIcon("icons/stop.png"))
         self.tab1ClosePlotButton.setIconSize(QSize(40, 40))
         self.tab1ClosePlotButton.setToolTip("Close all calibration factor plots.")
-        self.tab1ClosePlotButton.clicked.connect(lambda: func_calibration.close_plot(self))
+        self.tab1ClosePlotButton.clicked.connect(
+            lambda: func_calibration.close_plot(self)
+        )
         self.tab1ClosePlotButton.setEnabled(False)
-        label14 = QLabel('Close Plots')
+        label14 = QLabel("Close Plots")
 
         layout14.addWidget(self.tab1ClosePlotButton)
         layout14.addWidget(label14)
 
-        # self.oneComboButton = QPushButton("  Plot  ", self)
-        # self.oneComboButton.clicked.connect(self.plot_one_combo)
-        # self.oneComboButton.setEnabled(False)
-        # self.oneComboButton.setStyleSheet("font: bold")
-
-        # step 2
+        # step 2: calibration
         layout4 = QHBoxLayout()
         grid = QGridLayout()
         self.tab1ComboHintLabel = QLabel("  ")
         self.tab1ComboHintLabel.setStyleSheet(style.grey1())
-        self.tab1ComboHintLabel.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.tab1ComboHintLabel.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse
+        )
 
         layoutBtm.addLayout(layout4)
         layoutBtm.addLayout(grid)
@@ -854,15 +862,18 @@ class Window(QWidget):
         self.plotComboButton.clicked.connect(lambda: func_calibration.combo_study(self))
         self.plotComboButton.setStyleSheet("font: bold")
         self.stopPlotComboButton = QPushButton("Stop Plot", self)
-        self.stopPlotComboButton.clicked.connect(lambda: func_calibration.stop_combo_plot(self))
+        self.stopPlotComboButton.clicked.connect(
+            lambda: func_calibration.stop_combo_plot(self)
+        )
         self.stopPlotComboButton.setEnabled(False)
-        self.stopPlotComboButton.setToolTip("To stop combo plot, change the value of 'par1/combo_stop.txt' to 1.")
+        self.stopPlotComboButton.setToolTip(
+            "To stop combo plot, change the value of 'par1/combo_stop.txt' to 1."
+        )
 
         layout6.addWidget(self.plotComboButton)
         layout6.addWidget(self.stopPlotComboButton)
 
         gap = QLabel()
-        # self.rowNumRadioButton = QRadioButton("Use Row Numbers: ", self)
         label_step2_row1 = QLabel("Row 1")
         self.row1LineEdit = QLineEdit()
         label_step2_row2 = QLabel("vs Row 2")
@@ -881,7 +892,9 @@ class Window(QWidget):
         self.bg3.addButton(self.rowNumRadioButton)
         self.bg3.addButton(self.peakRadioButton)
 
-        label_step2_range1 = QLabel("Row Range for Plots: (leave blank to use defaults)")
+        label_step2_range1 = QLabel(
+            "Row Range for Plots: (leave blank to use defaults)"
+        )
         label_step2_range2 = QLabel("From:")
         label_step2_range3 = QLabel("To:")
         label_step2_range3.setAlignment(Qt.AlignmentFlag.AlignRight)
@@ -889,8 +902,6 @@ class Window(QWidget):
         self.comboRange1LineEdit.setToolTip("Default to minimal")
         self.comboRange2LineEdit = QLineEdit()
         self.comboRange2LineEdit.setToolTip("Default to maximal")
-
-        # grid.addWidget(self.rowNumRadioButton, 0, 0, 1, 3)
 
         grid.addWidget(gap, 1, 0)
         grid.addWidget(label_step2_row1, 1, 1)
@@ -909,7 +920,6 @@ class Window(QWidget):
         grid.addWidget(label_step2_range3, 5, 3)
         grid.addWidget(self.comboRange2LineEdit, 5, 4)
 
-
     def tab2_layout(self):  # real time spectrum viewer
         mainLayout = QVBoxLayout()
         self.tab2.setLayout(mainLayout)
@@ -919,7 +929,7 @@ class Window(QWidget):
         layout0 = QHBoxLayout()
         mainLayout.addWidget(self.graphWidget)
         mainLayout.addLayout(layout0)
-        
+
         self.plotKeyLabel = QLabel("Data Key for Plot:")
         layout1 = QVBoxLayout()
         layout2 = QVBoxLayout()
@@ -938,7 +948,7 @@ class Window(QWidget):
         self.startPlotButton.setToolTip("Close")
         self.startPlotButton.clicked.connect(lambda: func_experiment.start_plot(self))
         self.startPlotButton.setEnabled(False)
-        label1 = QLabel('  Start')
+        label1 = QLabel("  Start")
 
         self.stopPlotButton = QToolButton()
         self.stopPlotButton.setIcon(QIcon("icons/stop1.png"))
@@ -946,13 +956,12 @@ class Window(QWidget):
         self.stopPlotButton.setToolTip("Close")
         self.stopPlotButton.clicked.connect(lambda: func_experiment.stop_plot(self))
         self.stopPlotButton.setEnabled(False)
-        label2 = QLabel('  Stop')
+        label2 = QLabel("  Stop")
 
         layout1.addWidget(self.startPlotButton)
         layout1.addWidget(label1)
         layout2.addWidget(self.stopPlotButton)
         layout2.addWidget(label2)
-        
 
     # hardware
     def tab3_layout(self):
@@ -967,15 +976,27 @@ class Window(QWidget):
         mainLayout.addLayout(layout_right, 50)
 
         image1 = QLabel()
-        pixmap1 = QPixmap('icons/droplet_setup.png')
+        pixmap1 = QPixmap("icons/droplet_setup.png")
         image1.setPixmap(
-            pixmap1.scaled(550, 300, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.FastTransformation))
+            pixmap1.scaled(
+                550,
+                300,
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.FastTransformation,
+            )
+        )
         image1.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         image2 = QLabel()
-        pixmap2 = QPixmap('icons/gas_setup.png')
+        pixmap2 = QPixmap("icons/gas_setup.png")
         image2.setPixmap(
-            pixmap2.scaled(320, 200, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.FastTransformation))
+            pixmap2.scaled(
+                320,
+                200,
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.FastTransformation,
+            )
+        )
         image2.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         label_exp = QLabel("Calibration Experiment Set Up")
@@ -1000,9 +1021,7 @@ class Window(QWidget):
         layout_right.addWidget(label_gas)
         layout_right.addStretch()
 
-
         self.createTab3HardwareLayout()
-
 
     def createTab3HardwareLayout(self):
         layout1 = QVBoxLayout()  # system
@@ -1021,12 +1040,12 @@ class Window(QWidget):
         label0 = QLabel("Your system:")
         layout2 = QHBoxLayout()
         layout3 = QHBoxLayout()
-        
-        # portlist = [p.device for p in ls.comports()]
+
         self.portListLabel = QLabel()
-        # self.portListLabel.setText(str(portlist))
         self.portListLabel.setStyleSheet("background-color: white")
-        self.portListLabel.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.portListLabel.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse
+        )
 
         layout1.addWidget(label0)
         layout1.addLayout(layout2)
@@ -1037,11 +1056,11 @@ class Window(QWidget):
         rb2 = QRadioButton("Mac", self)
         rb3 = QRadioButton("Linux", self)
 
-        if opsystem == 'Darwin':
+        if opsystem == "Darwin":
             rb1.setEnabled(False)
             rb2.setChecked(True)
             rb3.setEnabled(False)
-        elif opsystem == 'Linux':
+        elif opsystem == "Linux":
             rb1.setEnabled(False)
             rb2.setEnabled(False)
             rb3.setChecked(True)
@@ -1070,15 +1089,20 @@ class Window(QWidget):
         label_analyzer3 = QLabel("Port In: ")
         label_analyzer_portin = QLabel("50070  (send data to analyzer/ backdoor)")
         button_analyzer1 = QPushButton("Detect")
-        button_analyzer1.clicked.connect(lambda: func_analyzer.detect_analyzer_portin(self))
+        button_analyzer1.clicked.connect(
+            lambda: func_analyzer.detect_analyzer_portin(self)
+        )
         self.analyzerPortInHintLabel = QLabel()
 
         label_analyzer4 = QLabel("Port Out: ")
-        label_analyzer_portout = QLabel("40060 (Receiving data from analyzer/ listener)")
+        label_analyzer_portout = QLabel(
+            "40060 (Receiving data from analyzer/ listener)"
+        )
 
         button_analyzer2 = QPushButton("Detect")
-        # button_analyzer2.clicked.connect(self.detect_analyzer_portout)
-        button_analyzer2.clicked.connect(lambda: func_analyzer.detect_analyzer_portout(self))
+        button_analyzer2.clicked.connect(
+            lambda: func_analyzer.detect_analyzer_portout(self)
+        )
         self.analyzerPortOutHintLabel = QLabel()
 
         grid1.addWidget(label_analyzer1, 0, 0, 1, 3)
@@ -1103,7 +1127,6 @@ class Window(QWidget):
         label_mfc3 = QLabel("MFC1 Address: ")
         self.MFC1AddressLineEdit = QLineEdit()
         mfc1Button = QPushButton("Detect")
-        # mfc1Button.clicked.connect(self.detect_mfc1)
         mfc1Button.clicked.connect(lambda: func_mfc.detect_mfc1(self))
         label_mfc4 = QLabel("dilution line, 1 SLPM")
         self.alicatMFC1HintLabel = QLabel()
@@ -1111,7 +1134,6 @@ class Window(QWidget):
         label_mfc5 = QLabel("MFC2 (large) Address: ")
         self.MFC2largeAddressLineEdit = QLineEdit()
         mfc2largeButton = QPushButton("Detect")
-        # mfc2largeButton.clicked.connect(self.detect_mfc2large)
         mfc2largeButton.clicked.connect(lambda: func_mfc.detect_mfc2large(self))
         label_mfc6 = QLabel("Bubble line, 100 sccm")
         self.alicatMFC2LargeHintLabel = QLabel()
@@ -1119,7 +1141,6 @@ class Window(QWidget):
         label_mfc7 = QLabel("MFC2 (small) Address: ")
         self.MFC2smallAddressLineEdit = QLineEdit()
         mfc2smallButton = QPushButton("Detect")
-        # mfc2smallButton.clicked.connect(self.detect_mfc2small)
         mfc2smallButton.clicked.connect(lambda: func_mfc.detect_mfc2small(self))
         label_mfc8 = QLabel("Bubble line, 10 sccm")
         self.alicatMFC2SmallHintLabel = QLabel()
@@ -1152,10 +1173,9 @@ class Window(QWidget):
         label_scale2 = QLabel("IP Address: ")
         self.scaleIPAddressLineEdit = QLineEdit()
         button_scale = QPushButton("Detect")
-        # button_scale.clicked.connect(self.detect_scale)
         button_scale.clicked.connect(lambda: func_scale.detect_scale(self))
         self.scaleHintLabel = QLabel()
-        
+
         label_scale3 = QLabel("Port: ")
         self.scalePortLineEdit = QLineEdit()
 
@@ -1164,121 +1184,26 @@ class Window(QWidget):
         grid3.addWidget(self.scaleIPAddressLineEdit, 1, 1)
         grid3.addWidget(button_scale, 1, 3)
         grid3.addWidget(self.scaleHintLabel, 1, 4)
-        
+
         grid3.addWidget(label_scale3, 2, 0)
         grid3.addWidget(self.scalePortLineEdit, 2, 1)
 
-
-
-# //////////////////// functions
-
-    # def get_key(self):
-    #     pass
-
-    # def send_MFC_data(self): # mfc
-    #     pass
-
-
-    # def scale_reading(self):  # scale
-    #     pass
-
-
-    # def scale_weigh(self):  # scale
-    #     pass
-
-    # def choose_droplet(self):  # exp
-    #     pass
-    #
-    # def choose_tank(self):  # exp
-    #     pass
-
-
-    # def create_experiment(self):  # exp
-        # if self.sendMFCButton.isEnabled():
-        #     print('enabled')
-        # if self.expAddButton.isEnabled():
-        #     print('yes')
-        # else:
-        #     print('no')
-
-
-    # def tab1_terminate_exp(self):
-    #     pass
-
-
-    # def set_mfc_1slpm(self):  #mfc
-    #     pass
-    # 
-    # def set_mfc_100sccm(self):  # mfc
-    #     pass
-    # 
-    # def set_mfc_10sccm(self):  # mfc
-    #     pass
-
-    # def choose_100sccm(self):  # mfc
-    #     pass
-    #
-    # def choose_10sccm(self):  # mfc
-    #     pass
-
-    # def start_exp(self):  # exp
-    #     pass
-
-    # def stop_flow(self):  # mfc
-    #     pass
-
-    # def add_sample(self):
-    #     pass
-
-    # def end_exp(self):
-    #     pass
-
-    # def load_experiment(self):  cal
-    #     pass
-
-    # def calculate(self): cal
-    #     pass
-
-    # def close_plot(self): #cal
-    #     pass
-
-    # def plot_one_combo(self): #cal
-    #     pass
-
-    # def combo_study(self):  # cal
-    #     pass
-
+    # //////////////////// functions
+    # in utility folder
     # def choose_row(self):
     #     pass
-    # 
+    #
     # def choose_peak(self):
     #     pass
 
-
-
-    # def detect_analyzer_portin(self):  # analyzer
-    #     pass
-    # 
-    # def detect_analyzer_portout(self):  # analyzer
-    #     pass
-
-    # def detect_mfc1(self):  # mfc
-    #     pass
-
-    # def detect_mfc2large(self):  # mfc
-    #     pass
-
-    # def detect_mfc2small(self):  # mfc
-    #     pass
-
-    # def detect_scale(self):  # scale
-    #     pass
-
-
     def exitFunc(self, event):
-        reply = QMessageBox.question(self, 'Message',
-                                     "Are you sure to quit?", QMessageBox.StandardButton.Yes |
-                                     QMessageBox.StandardButton.No, QMessageBox.StandardButton.Yes)
+        reply = QMessageBox.question(
+            self,
+            "Message",
+            "Are you sure to quit?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.Yes,
+        )
 
         if reply == QMessageBox.StandardButton.Yes:
             self.close()
@@ -1287,12 +1212,12 @@ class Window(QWidget):
 def main():
     app = QApplication(sys.argv)
     window = Window()
-    app.setWindowIcon(QIcon('icons/logo.png'))
+    app.setWindowIcon(QIcon("icons/logo.png"))
     window.show()
     app.exec()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
 
 # @author: Yilin Shi | 2023.9.15

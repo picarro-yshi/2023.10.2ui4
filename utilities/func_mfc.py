@@ -1,16 +1,13 @@
-## other tab1 functions
-import socket
-from queue import Queue
+## MFC functions
+
 import time
 import os
 
 from alicat import FlowController
-from Listener_py3 import Listener
-import StringPickler_py3 as StringPickler
 import CmdFIFO_py3 as CmdFIFO
 
-datakey1 = 'MFC1_flow'
-datakey2 = 'MFC2_flow'
+datakey1 = "MFC1_flow"
+datakey2 = "MFC2_flow"
 
 
 def set_mfc_1slpm(self, x=None):
@@ -19,17 +16,17 @@ def set_mfc_1slpm(self, x=None):
             F1 = float(self.tab1MFC1LineEdit.text())  # dilution line
         else:
             F1 = x
-            
+
         if F1 > 1 or F1 < 0:
-            self.mfcHintLabel.setText('! Error: Input a value between 0-1.')
+            self.mfcHintLabel.setText("! Error: Input a value between 0-1.")
         else:
             port_mfc = self.mfcPortCombobox.currentText()
             adr1 = self.MFC1AddressLineEdit.text()
             flow_controller1 = FlowController(port=port_mfc, address=adr1)
             flow_controller1.set_flow_rate(flow=F1)
-            self.mfcHintLabel.setText('• Dilution line set to ' + str(F1))
+            self.mfcHintLabel.setText("• Dilution line set to " + str(F1))
     except:
-        self.mfcHintLabel.setText('! Error: unable to set MFC1 flow.')
+        self.mfcHintLabel.setText("! Error: unable to set MFC1 flow.")
 
 
 def set_mfc_100sccm(self, x=None):
@@ -38,9 +35,9 @@ def set_mfc_100sccm(self, x=None):
             F2 = float(self.tab1MFC100Combobox.currentText())  # bubbler line large
         else:
             F2 = x
-        
+
         if F2 > 100 or F2 < 0:
-            self.mfcHintLabel.setText('! Error: Input a value between 0-100.')
+            self.mfcHintLabel.setText("! Error: Input a value between 0-100.")
         else:
             port_mfc = self.mfcPortCombobox.currentText()
             adr1 = self.MFC1AddressLineEdit.text()
@@ -51,9 +48,9 @@ def set_mfc_100sccm(self, x=None):
             flow_controller1.set_flow_rate(flow=F1)
             flow_controller2.set_flow_rate(flow=F2)
             self.tab1MFC1LineEdit.setText(str(F1))
-            self.mfcHintLabel.setText('• Bubble line set to ' + str(F2))
+            self.mfcHintLabel.setText("• Bubble line set to " + str(F2))
     except:
-        self.mfcHintLabel.setText('! Error: Unable to set MFC2 flow.')
+        self.mfcHintLabel.setText("! Error: Unable to set MFC2 flow.")
 
 
 def set_mfc_10sccm(self, x=None):
@@ -62,22 +59,22 @@ def set_mfc_10sccm(self, x=None):
             F2 = float(self.tab1MFC10Combobox.currentText())  # bubbler line small
         else:
             F2 = x
-        
+
         if F2 > 10 or F2 < 0:
-            self.mfcHintLabel.setText('! Error: Input a value between 0-10.')
+            self.mfcHintLabel.setText("! Error: Input a value between 0-10.")
         else:
             port_mfc = self.mfcPortCombobox.currentText()
             adr1 = self.MFC1AddressLineEdit.text()
             adr2 = self.MFC2smallAddressLineEdit.text()
-            F1 = 1 - F2 / 1000  # dilution
+            F1 = 1 - F2 / 1000  # dilution line
             flow_controller1 = FlowController(port=port_mfc, address=adr1)
             flow_controller2 = FlowController(port=port_mfc, address=adr2)
             flow_controller1.set_flow_rate(flow=F1)
             flow_controller2.set_flow_rate(flow=F2)
             self.tab1MFC1LineEdit.setText(str(F1))
-            self.mfcHintLabel.setText('• Bubble line set to ' + str(F2))
+            self.mfcHintLabel.setText("• Bubble line set to " + str(F2))
     except:
-        self.mfcHintLabel.setText('! Error: Unable to set MFC2 flow.')
+        self.mfcHintLabel.setText("! Error: Unable to set MFC2 flow.")
 
 
 def choose_100sccm(self):
@@ -100,7 +97,7 @@ def choose_10sccm(self):
     self.tab1MFC10Button.setStyleSheet("color: black")
 
 
-def stop_flow(self):
+def stop_mfc2_flow(self):  # stop MFC2, set MFC1 to maximum
     try:
         port_mfc = self.mfcPortCombobox.currentText()
         adr1 = self.MFC1AddressLineEdit.text()
@@ -114,11 +111,9 @@ def stop_flow(self):
         flow_controller2large.set_flow_rate(flow=0)
         flow_controller2small.set_flow_rate(flow=0)
 
-        # self.tab1MFC100Combobox.setCurrentText("0")
-        # self.tab1MFC10Combobox.setCurrentText("0")
-        self.mfcHintLabel.setText('• MFC2 Bubble line stopped.')
+        self.mfcHintLabel.setText("• MFC2 Bubble line stopped.")
     except:
-        self.mfcHintLabel.setText('! Error: Unable to stop the flow.')
+        self.mfcHintLabel.setText("! Error: Unable to stop the flow.")
 
 
 def send_MFC_data(self):
@@ -139,16 +134,18 @@ def send_MFC_data(self):
         self.flow_controller2 = FlowController(port=port_mfc, address=mfc_address2)
 
         host = self.analyzerIPLineEdit.text()
-        self.analyzer_ip = 'http://' + host
+        self.analyzer_ip = "http://" + host
 
         self.timer_mfc.start()
         self.sendMFCButton.setEnabled(False)
         self.stopSendMFCButton.setEnabled(True)
     except:
-        self.tab1ExperimentHint.setText(" ! Error sending MFC data to analyzer.\nPlease try again.")
+        self.tab1ExperimentHint.setText(
+            " ! Error sending MFC data to analyzer.\nPlease try again."
+        )
 
 
-def sendMFC(self):
+def sendMFC(self):  # send data to analyzer
     try:
         fc1 = self.flow_controller1.get()
         fc2 = self.flow_controller2.get()
@@ -160,24 +157,26 @@ def sendMFC(self):
         # port_out = 40060  ## listener, get data from analyzer
         # MeasSystem = CmdFIFO.CmdFIFOServerProxy("http://localhost:%s" % port_in, "test_connection",
         #                                         IsDontCareConnection=False)
-        MeasSystem = CmdFIFO.CmdFIFOServerProxy(f"{self.analyzer_ip}:{self.port_in}", "test_connection",
-                                                IsDontCareConnection=False)  # time out has no effect
+        MeasSystem = CmdFIFO.CmdFIFOServerProxy(
+            f"{self.analyzer_ip}:{self.port_in}",
+            "test_connection",
+            IsDontCareConnection=False,
+        )  # time out has no effect
         # print(MeasSystem.GetStates())
 
-        # sent measurement data on Alicat to Picarro fitting software
-        a = fc1['mass_flow']
-        b = fc2['mass_flow']
-        c = fc2['pressure']
-        d = fc2['temperature']
+        a = fc1["mass_flow"]
+        b = fc2["mass_flow"]
+        c = fc2["pressure"]
+        d = fc2["temperature"]
 
         MeasSystem.Backdoor.SetData(datakey1, a)
         MeasSystem.Backdoor.SetData(datakey2, b)
-        MeasSystem.Backdoor.SetData('MFC2_P_amb', c)
-        MeasSystem.Backdoor.SetData('MFC2_T_amb', d)
+        MeasSystem.Backdoor.SetData("MFC2_P_amb", c)
+        MeasSystem.Backdoor.SetData("MFC2_T_amb", d)
         self.tab1Layout1Hint.setText("• MFC data sent to analyzer.")
     except:
         self.tab1Layout1Hint.setText(" ! Error sending MFC data sent to analyzer.")
-        print('MFC data to analyzer error detected: ', time.ctime())
+        print("MFC data to analyzer error detected: ", time.ctime())
 
     # refresh
     try:
@@ -186,7 +185,7 @@ def sendMFC(self):
         self.tab1PressureLabel.setText(str(c))
         self.tab1TempLabel.setText(str(d))
     except:
-        print('MFC refresh error: ', time.ctime())
+        print("MFC refresh error: ", time.ctime())
 
 
 def stop_send_MFC_data(self):
@@ -201,8 +200,8 @@ def detect_mfc(self, adr):
         fc = FlowController(port=port_mfc, address=adr)
         print(fc.get())
 
-        fn = os.path.join('par1', 'mfc_port.txt')
-        with open(fn, 'w') as f:
+        fn = os.path.join("par1", "mfc_port.txt")
+        with open(fn, "w") as f:
             f.write(port_mfc)
         return 1
     except:
@@ -213,13 +212,13 @@ def detect_mfc1(self):
     adr = self.MFC1AddressLineEdit.text()
     tag = detect_mfc(self, adr)
     if tag:
-        self.alicatMFC1HintLabel.setText('\u2713')
+        self.alicatMFC1HintLabel.setText("\u2713")
 
-        fn = os.path.join('par1', 'mfc1_address.txt')
-        with open(fn, 'w') as f:
+        fn = os.path.join("par1", "mfc1_address.txt")
+        with open(fn, "w") as f:
             f.write("%s" % adr)
     else:
-        self.alicatMFC1HintLabel.setText('\u2717')
+        self.alicatMFC1HintLabel.setText("\u2717")
     return tag
 
 
@@ -227,13 +226,13 @@ def detect_mfc2large(self):
     adr = self.MFC2largeAddressLineEdit.text()
     tag = detect_mfc(self, adr)
     if tag:
-        self.alicatMFC2LargeHintLabel.setText('\u2713')
+        self.alicatMFC2LargeHintLabel.setText("\u2713")
 
-        fn = os.path.join('par1', 'mfc2large_address.txt')
-        with open(fn, 'w') as f:
+        fn = os.path.join("par1", "mfc2large_address.txt")
+        with open(fn, "w") as f:
             f.write("%s" % adr)
     else:
-        self.alicatMFC2LargeHintLabel.setText('\u2717')
+        self.alicatMFC2LargeHintLabel.setText("\u2717")
     return tag
 
 
@@ -241,13 +240,13 @@ def detect_mfc2small(self):
     adr = self.MFC2smallAddressLineEdit.text()
     tag = detect_mfc(self, adr)
     if tag:
-        self.alicatMFC2SmallHintLabel.setText('\u2713')
+        self.alicatMFC2SmallHintLabel.setText("\u2713")
 
-        fn = os.path.join('par1', 'mfc2small_address.txt')
-        with open(fn, 'w') as f:
+        fn = os.path.join("par1", "mfc2small_address.txt")
+        with open(fn, "w") as f:
             f.write("%s" % adr)
     else:
-        self.alicatMFC2SmallHintLabel.setText('\u2717')
+        self.alicatMFC2SmallHintLabel.setText("\u2717")
     return tag
 
 

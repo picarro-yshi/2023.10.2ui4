@@ -1,14 +1,18 @@
-## other tab1 functions
+## Scale functions
+
 import socket
 import os
 
 BUFFER_SIZE = 1024
 
+
 def detect_scale(self):
     try:
         self.scale_ip = self.scaleIPAddressLineEdit.text()  # '10.100.3.83'  TCP_IP
         self.scale_port = int(self.scalePortLineEdit.text())  # 8001  TCP_PORT
-        s = socket.create_connection((self.scale_ip, self.scale_port), 5)  # only try 5s time out
+        s = socket.create_connection(
+            (self.scale_ip, self.scale_port), 5
+        )  # only try 5s time out
         s.settimeout(2)
 
         try:
@@ -16,12 +20,12 @@ def detect_scale(self):
             w1 = s.recv(BUFFER_SIZE)
             w2 = w1.decode("utf-8")
             print(w1)
-            if w2[:3] == 'S S':
-                print('Mettler Toledo scale is ready.')
-                self.scaleHintLabel.setText('\u2713')
+            if w2[:3] == "S S":
+                print("Mettler Toledo scale is ready.")
+                self.scaleHintLabel.setText("\u2713")
 
-                fn = os.path.join('par1', 'scale.txt')
-                with open(fn, 'w') as f:
+                fn = os.path.join("par1", "scale.txt")
+                with open(fn, "w") as f:
                     f.write("%s\n%s" % (self.scale_ip, self.scale_port))
 
             else:
@@ -30,13 +34,12 @@ def detect_scale(self):
             tag = 1
 
         if tag:
-            s.send(b'@\r\n')  # Wake up scale
-            # k = s.recv(BUFFER_SIZE)  # = clear buffer
-            print('Wake up the Mettler Toledo scale')
+            s.send(b"@\r\n")  # Wake up scale
+            print("Wake up the Mettler Toledo scale")
         return 1
     except:
         self.ScaleRealTimeLabel.setText("Not connected")
-        self.scaleHintLabel.setText('\u2717')
+        self.scaleHintLabel.setText("\u2717")
         return 0
 
 
@@ -52,15 +55,15 @@ def get_measurement(self):
 
 def scale_reading(self):
     self.graphWidget1.clear()
-    self.weightLabel.setText('0.00000')
-    self.ScaleRealTimeLabel.setText(' ')
+    self.weightLabel.setText("0.00000")
+    self.ScaleRealTimeLabel.setText(" ")
 
     if detect_scale(self):
         try:
             self.weightime = int(self.scaleTimeLineEdit.text())
         except:
             self.weightime = 180
-            self.scaleTimeLineEdit.setText('180')
+            self.scaleTimeLineEdit.setText("180")
 
         self.scale_x = []
         self.scale_y = []
@@ -68,16 +71,14 @@ def scale_reading(self):
 
         try:
             self.timer_scale.start()
-            # self.scaleStartButton.setEnabled(False)
         except:
             self.ScaleRealTimeLabel.setText("! Error")
-    
+
 
 def scale_plot(self):
     if self.scale_i == self.weightime:
-        # self.scaleStartButton.setEnabled(True)
         self.timer_scale.stop()
-        
+
     else:
         try:
             weight = get_measurement(self)  # if cannot get value from scale, stop
@@ -94,18 +95,17 @@ def scale_plot(self):
             self.ScaleRealTimeLabel.setText("Not connected")
             print("scale plot error")
 
-        
+
 def scale_weigh(self):
-    self.weightLabel.setText('0.00000')
+    self.weightLabel.setText("0.00000")
     try:  # when animation is running, get from label
         w1 = float(self.ScaleRealTimeLabel.text())
         w2 = round(w1, 5)
         self.weightLabel.setText(str(w2))
         self.sampleWeightLineEdit.setText(str(w2))
-        print('use scale real time label')
+        print("use scale real time label")
     except:  # when no animation is not run
-        print('measuring ...')
-        # self.weightLabel.setText(' ')
+        print("measuring ...")
         if detect_scale(self):
             weight = get_measurement(self)
             self.weightLabel.setText(str(weight))
@@ -114,19 +114,18 @@ def scale_weigh(self):
 
 def detect_scale_local():
     try:
-        scale_ip = '10.100.3.83'  #TCP_IP
-        scale_port = 8001  #TCP_PORT
+        scale_ip = "10.100.3.83"  # TCP_IP
+        scale_port = 8001  # TCP_PORT
         s = socket.create_connection((scale_ip, scale_port), 5)  # only try 5s time out
         s.settimeout(2)
 
         try:
             print(s.recv(BUFFER_SIZE))
-            print('Mettler Toledo scale is ready.')
+            print("Mettler Toledo scale is ready.")
         except:
-            s.send(b'@\r\n')  # Wake up scale
+            s.send(b"@\r\n")  # Wake up scale
             k = s.recv(BUFFER_SIZE)  # = clear buffer
-            print('Wake up the Mettler Toledo scale')
-
+            print("Wake up the Mettler Toledo scale")
         return 1
     except:
         print("Not connected")
