@@ -648,7 +648,7 @@ class Window(QWidget):
         self.mfcStopButton.setIconSize(QSize(40, 40))
         self.mfcStopButton.setToolTip("Stop Alicat flow.")
         self.mfcStopButton.clicked.connect(lambda: func_mfc.stop_mfc2_flow(self))
-        label2 = QLabel("Stop Flow")
+        label2 = QLabel("Stop MFC2 Flow")
         label2.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.expSuffix = QLineEdit("")  # '' suffix

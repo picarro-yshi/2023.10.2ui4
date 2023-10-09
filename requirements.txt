@@ -1,0 +1,10 @@
+PyQt6
+pyqtgraph
+Pyro4
+zmq
+pyserial
+matplotlib
+h5py
+tables
+pandas
+scipy
