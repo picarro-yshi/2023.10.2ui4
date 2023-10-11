@@ -31,6 +31,7 @@ def choose_droplet(self):
     self.sampleTankConcLineEdit.setDisabled(True)
     self.aqCheckbox.setDisabled(False)  # aqueous droplet
     self.automationCheckbox.setDisabled(False)
+    self.saveGasCheckbox.setDisabled(False)
 
     ## button tips
     self.expStartButton.setToolTip(
@@ -51,6 +52,7 @@ def choose_tank(self):
     self.sampleTankConcLineEdit.setDisabled(False)
     self.aqCheckbox.setDisabled(True)  # aqueous droplet
     self.automationCheckbox.setDisabled(True)
+    self.saveGasCheckbox.setDisabled(True)
 
     ## button tips
     self.expStartButton.setToolTip("Start experiment.\nRecord start time.")
@@ -187,7 +189,8 @@ def datakey_check(self):
 
 def create_experiment(self):
     # open the bubble line
-    set_MFC2_flow(self)
+    if self.dropletRadioButton.isChecked():
+        set_MFC2_flow(self)
 
     # input error check, fill in start day, check MFC connection
     tag = input_check(self)
@@ -268,8 +271,6 @@ def create_experiment(self):
             os.mkdir(fnrp)
 
             save_parameter_local(self)
-            save_parameter_R(self)
-            print("parameters saved")
 
             # enable, disable
             self.tab1CreateExpButton.setEnabled(False)
@@ -333,6 +334,10 @@ def save_parameter_R(self):
             p = os.path.join(fnrp, "molecular_weight.txt")
             with open(p, "w") as f:
                 f.write(self.sampleMWLineEdit.text())
+
+            p = os.path.join(fnrp, "weight.txt")
+            with open(p, "w") as f:
+                f.write(self.sampleWeightLineEdit.text())
 
         if self.tankRadioButton.isChecked():
             p = os.path.join(fnrp, "tankconc.txt")
@@ -518,7 +523,7 @@ def add_sample(self):
         ## get baseline 1:
         print("len baseline", len(self.baseline))
         if len(self.baseline) > 25:
-            baseline_before = self.baseline[10:-10]
+            baseline_before = self.baseline[5:-10]
         else:  # cheater to waive the 30-min baseline requirement
             baseline_before = self.baseline[5:]
             print("baseline_before = baseline")
@@ -566,11 +571,13 @@ def add_sample(self):
         else:
             self.note1 = (
                 "• Sample tank connected at %s:%s! Please run until baseline is stable.\n"
-                "Baseline std before: %.4f" % (t2, t3, self.sigma1)
+                "Baseline std before: %.4E" % (t2, t3, self.sigma1)
             )
         self.tab1ExperimentHint.setText(self.note1)
-        save_parameter_R_time(self)
 
+        save_parameter_R(self)
+        save_parameter_R_time(self)
+        print("parameters saved")
     except:
         self.tab1ExperimentHint.setText(" ! Error record add sample time.\n")
 
@@ -623,10 +630,10 @@ def track_baseline1(self):
             if sigma2 < self.sigma1 * 1.1:  # 1.05
                 update_endtime(self)
 
-            self.tab1ExperimentHint.setText(
-                "• Baseline is stable for the past 30-min. You may end now\n"
-                "Baseline std before: %.4E, now: %.4E" % (self.sigma1, sigma2)
-            )
+                self.tab1ExperimentHint.setText(
+                    "• Baseline is stable for the past 30 mins. You may end now\n"
+                    "Baseline std before: %.4E, now: %.4E" % (self.sigma1, sigma2)
+                )
     except:
         self.tab1ExperimentHint.setText(" ! Error: Failed to track baseline.\n")
 
@@ -671,7 +678,7 @@ def track_loss(self):
         if self.auto_tag2:
             # concentration = self.y[-1]
             # print('concentration: ', self.y[-1])
-            if self.y[-10] < 5e-7:
+            if self.y[-3] < 5e-7:
                 if self.dropletRadioButton.isChecked():
                     func_mfc.set_mfc_100sccm(self, 100)
                 else:
@@ -693,11 +700,6 @@ def track_loss(self):
 
 def end_exp(self):
     # easy things first
-    if self.dropletRadioButton.isChecked():
-        fnrp = os.path.join(self.experiment_path, "par")
-        p = os.path.join(fnrp, "weight.txt")
-        with open(p, "w") as f:
-            f.write(self.sampleWeightLineEdit.text())
 
     # fill in end time
     note = ""
