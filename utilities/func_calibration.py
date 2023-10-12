@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 jupyterpath = "../2023.10.1jupyter4/"
 sys.path.append(jupyterpath)
-import combo_other, combo, droplet_aq, droplet, tank
+import combo_other, combo, droplet_aq, droplet, tank, loadprivate
 
 from utilities import func_experiment
 
@@ -160,6 +160,21 @@ def calculate(self):
     tag, t1, t2, t3 = calculation_check(self)
 
     if tag:
+        if self.dropletRadioButton.isChecked():
+            # check if private data miss keys
+            ht, _ = loadprivate.loadprivate(self.experiment_path, verbose=False)
+
+            note = ''
+            if 'MFC1_flow' not in ht:
+                note = 'Private data missing key: MFC1_flow'
+            if 'MFC2_flow' not in ht:
+                note += ', MFC2_flow'
+
+            if note:
+                tag = 0
+                self.tab1CalHintLabel.setText(note + '\nPleas delete the first 2-min data and try again.')
+
+    if tag:
         try:
             print("start calculating")
             # sample = self.sampleNameLineEdit.text()
@@ -175,20 +190,21 @@ def calculate(self):
                 row = 500
 
             if self.dropletRadioButton.isChecked():
-                print("droplet test")
                 weight = float(self.sampleWeightLineEdit.text())
                 MW = float(self.sampleMWLineEdit.text())
                 sigma = int(self.sampleSigmaCombobox.currentText())
 
                 if self.aqCheckbox.isChecked():  # aqueous solution
                     print("aqueous droplet")
-                    (
-                        self.F1,
-                        self.F2,
-                        self.F3,
-                        self.F4,
-                        max_row,
-                    ) = droplet_aq.aqueous_droplet(
+                    # (
+                    #     self.F1,
+                    #     self.F2,
+                    #     self.F3,
+                    #     self.F4,
+                    #     max_row,
+                    # ) 
+                    
+                    result = droplet_aq.aqueous_droplet(
                         self.experiment_path,
                         self.sample,
                         cid,
@@ -203,13 +219,16 @@ def calculate(self):
                     )
 
                 else:  # pure analyte
-                    (
-                        self.F1,
-                        self.F2,
-                        self.F3,
-                        self.F4,
-                        max_row,
-                    ) = droplet.calibration_droplet(
+                    print("droplet test")
+
+                    # (
+                    #     self.F1,
+                    #     self.F2,
+                    #     self.F3,
+                    #     self.F4,
+                    #     max_row,
+                    # ) 
+                    result = droplet.calibration_droplet(
                         self.experiment_path,
                         self.sample,
                         cid,
@@ -232,7 +251,8 @@ def calculate(self):
             else:
                 print("gas tank")
                 tank_conc = float(self.sampleTankConcLineEdit.text())
-                self.F1, self.F2, self.F3, self.F4, max_row = tank.calibration_gastank(
+                # self.F1, self.F2, self.F3, self.F4, max_row
+                result = tank.calibration_gastank(
                     self.experiment_path,
                     self.sample,
                     cid,
@@ -244,6 +264,7 @@ def calculate(self):
                     savefig=savefigure,
                 )
 
+            self.F1, self.F2, self.F3, self.F4, max_row = result
             ## write on R drive
             fn = os.path.join(self.experiment_path, "par", "max_row.txt")
             with open(fn, "w") as f:
@@ -291,6 +312,9 @@ def plot_one_combo(self):
     note = combo_other.plot_combo(self.experiment_path, self.sample, combokey, row)
     if note:
         self.tab1ComboHintLabel.setText(" ! Error: " + note)
+    else:
+        self.tab1ComboHintLabel.setText("• Combo data plotted.")
+
 
 
 def combo_study(self):
@@ -353,6 +377,8 @@ def combo_study(self):
 
     if note:
         self.tab1ComboHintLabel.setText(" ! Error: " + note)
+    else:
+        self.tab1ComboHintLabel.setText("• Combo data plotted.")
     # self.stopPlotComboButton.setEnabled(False)
 
 

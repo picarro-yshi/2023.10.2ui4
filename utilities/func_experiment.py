@@ -232,11 +232,11 @@ def create_experiment(self):
 
     # everything is ready, we can run experiment now
     if tag:
-        print("all checks passed!")
+        print("* all checks passed!")
 
         try:
             self.timer_data.start()
-            print("data manager timer started")
+            print("* data manager timer started")
 
             # start plot fresh
             self.graphWidget.clear()
@@ -441,7 +441,7 @@ def start_plot(self):
     self.startPlotButton.setEnabled(False)
     self.stopPlotButton.setEnabled(True)
     self.timer_plot.start()
-    print("viewer started")
+    print("* viewer started")
 
 
 def stop_plot(self):
@@ -471,9 +471,15 @@ def set_MFC2_flow(self, percentage=1.0):
 # start experiment, record time, no error check
 def start_exp(self):
     try:
-        # t1 = self.expStartLineEdit.text()
-        t2 = time.strftime("%H")
-        t3 = time.strftime("%M")
+        epoch = int(time.time()) + 60  # a min later, to avoid the 'missing MFC key' error
+        ep = time.strftime("%Y%m%d %H:%M", time.localtime(epoch))
+        # t1 = ep[:9]
+        t2 = ep[9:11]
+        t3 = ep[12:14]
+
+        # # t1 = self.expStartLineEdit.text()
+        # t2 = time.strftime("%H")
+        # t3 = time.strftime("%M")
         self.expStartCombobox1.setCurrentText(t2)
         self.expStartCombobox2.setCurrentText(t3)
 
@@ -481,8 +487,8 @@ def start_exp(self):
         self.expAddButton.setEnabled(True)
         self.expEndButton.setEnabled(True)
 
-        # 30 min later: 20 min baseline+10 min, see spike when turn on bubble line
-        self.epoch2 = int(time.time()) + BASELINE_Time * 60 + 660
+        # 30 min later: 20 min baseline+10 min + 2 min, see spike when turn on bubble line
+        self.epoch2 = int(time.time()) + BASELINE_Time * 60 + 600 + 120
         ep = time.strftime("%Y%m%d %H:%M:%S", time.localtime(self.epoch2))
         note1 = (
             "• Experiment started at %s:%s!\nPlease wait at least 30min, until %s:%s to "
@@ -587,9 +593,8 @@ def update_endtime(self):
     t1 = time.strftime("%Y%m%d")
     t2 = time.strftime("%H")
     t3 = time.strftime("%M")
-    self.expEndLineEdit.setText(
-        t1
-    )  # autofill, as a message, baseline is low enough and experiment can stop
+    # autofill, as a message, baseline is low enough and experiment can stop
+    self.expEndLineEdit.setText(t1)
     self.expEndCombobox1.setCurrentText(t2)
     self.expEndCombobox2.setCurrentText(t3)
 
@@ -700,7 +705,6 @@ def track_loss(self):
 
 def end_exp(self):
     # easy things first
-
     # fill in end time
     note = ""
     if not self.expEndLineEdit.text():
@@ -719,13 +723,10 @@ def end_exp(self):
         stop_plot(self)
     self.startPlotButton.setEnabled(False)
 
+    if self.automationCheckbox.isChecked():
+        self.timer_auto.stop()  # track loss
     self.timer_baseline.stop()  # track baseline
     self.timer_data.stop()  # data manager
-
-    try:
-        self.timer_auto.stop()
-    except:
-        pass
 
     # enough time to get the most recent time from line_edit
     save_parameter_R(self)
@@ -736,17 +737,16 @@ def end_exp(self):
     self.tab1CreateExpButton.setEnabled(True)
     if self.dropletRadioButton.isChecked():
         self.tankRadioButton.setEnabled(True)
-        self.automationCheckbox.setDisabled(False)
-    else:
-        self.dropletRadioButton.setEnabled(True)
-
-
-    if self.dropletRadioButton.isChecked():
+        
+        # shut down gas flow after experiment ends
         if self.saveGasCheckbox.isChecked():
-            # shut down gas flow after experiment ends
             func_mfc.stop_mfc2_flow(self)
             func_mfc.set_mfc_1slpm(self, 0)
             func_mfc.stop_send_MFC_data(self)
+
+    else:
+        self.dropletRadioButton.setEnabled(True)
+
 
 
 if __name__ == "__main__":
