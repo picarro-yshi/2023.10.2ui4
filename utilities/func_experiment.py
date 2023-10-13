@@ -18,7 +18,7 @@ from Listener_py3 import Listener
 import StringPickler_py3 as StringPickler
 
 BASELINE_Time = 20  # min, sample baseline time
-PLOT_WINDOW_LENGTH = 1  # hour, time length for plot window
+PLOT_WINDOW_LENGTH = 60  # min, time length for plot window
 ANALYZER_SOURCE2 = "analyze_VOC_1"  # to get max_loss
 
 
@@ -204,12 +204,12 @@ def create_experiment(self):
         print("analyzer port check passed, fitter data speed (s/pt): %s" % data_speed)
         if data_speed:
             # ideal value:
-            self.window_points = int(PLOT_WINDOW_LENGTH * 3600 / data_speed)
+            self.window_points = int(PLOT_WINDOW_LENGTH * 60 / data_speed)
             self.baseline_points = int(BASELINE_Time * 60 / data_speed)
             print("ideal point#: ", self.window_points, self.baseline_points)
 
             # practical value: very slow, 3~4 points/min
-            self.window_points = int(PLOT_WINDOW_LENGTH * 60 * 4)
+            self.window_points = int(PLOT_WINDOW_LENGTH * 3)
             self.baseline_points = int(BASELINE_Time * 4)
             print("practical point#: ", self.window_points, self.baseline_points)
         else:

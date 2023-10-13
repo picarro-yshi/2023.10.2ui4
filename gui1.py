@@ -227,7 +227,7 @@ class Window(QWidget):
         version.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         self.plotCheckbox = QCheckBox("Plot data key:")
-        self.plotCheckbox.setChecked(True)
+        # self.plotCheckbox.setChecked(True)
         self.plotCheckbox.setToolTip("Check if you want plot on tab 2 to start.")
         self.datakeyLabel = QLabel("broadband_gasConcs_[CID]")
         self.tab1Layout1Hint = QLabel()
