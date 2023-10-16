@@ -187,7 +187,7 @@ def calculate(self):
             try:
                 row = int(self.oneComboNumLineEdit.text())
             except:
-                row = 500
+                row = 300
 
             if self.dropletRadioButton.isChecked():
                 weight = float(self.sampleWeightLineEdit.text())
@@ -260,7 +260,7 @@ def calculate(self):
                     t1,
                     t2,
                     t3,
-                    row=500,
+                    row=row,
                     savefig=savefigure,
                 )
 

@@ -228,13 +228,6 @@ def create_experiment(self):
     # tab2 plot
     if tag:
         if self.plotCheckbox.isChecked():
-            start_plot(self)
-
-    # everything is ready, we can run experiment now
-    if tag:
-        print("* all checks passed!")
-
-        try:
             self.timer_data.start()
             print("* data manager timer started")
 
@@ -244,6 +237,14 @@ def create_experiment(self):
             self.y = []
             self.xtick = []
             self.baseline = []
+
+            start_plot(self)
+
+    # everything is ready, we can run experiment now
+    if tag:
+        print("* all checks passed!")
+
+        try:
 
             try:
                 self.sample_sigma = int(self.sampleSigmaCombobox.currentText())
@@ -527,15 +528,17 @@ def add_sample(self):
                 )
 
         ## get baseline 1:
-        print("len baseline", len(self.baseline))
-        if len(self.baseline) > 25:
-            baseline_before = self.baseline[5:-10]
-        else:  # cheater to waive the 30-min baseline requirement
-            baseline_before = self.baseline[5:]
-            print("baseline_before = baseline")
+        # this method use too much memory
+        # print("len baseline", len(self.baseline))
+        # if len(self.baseline) > 25:
+        #     baseline_before = self.baseline[5:-10]
+        # else:  # cheater to waive the 30-min baseline requirement
+        #     baseline_before = self.baseline[5:]
+        #     print("baseline_before = baseline")
+        # self.zero1 = np.mean(baseline_before)
+        # self.sigma1 = np.std(baseline_before)
 
-        self.zero1 = np.mean(baseline_before)
-        self.sigma1 = np.std(baseline_before)
+        self.zero1, self.sigma1 = calculate_zero_sigma(self)
 
         print("zero1, sample added:")
         print(time.ctime(time.time()))
@@ -604,8 +607,10 @@ def update_endtime(self):
 
 def track_baseline1(self):
     try:
-        zero2 = np.mean(self.baseline)
-        sigma2 = float(np.std(self.baseline))
+        # zero2 = np.mean(self.baseline)
+        # sigma2 = float(np.std(self.baseline))
+
+        zero2, sigma2 = calculate_zero_sigma(self)
 
         print("zero2, sigma2: ", zero2, sigma2)
         print(time.ctime(time.time()))
@@ -642,6 +647,39 @@ def track_baseline1(self):
     except:
         self.tab1ExperimentHint.setText(" ! Error: Failed to track baseline.\n")
 
+
+def calculate_zero_sigma(self):
+    zero = 0
+    sigma = 0
+    try:
+        self.host = self.analyzerIPLineEdit.text()
+        socket.create_connection((self.host, self.port_out), 5)
+        dm_queue = Queue(180)  ## data manager
+        listener = Listener(
+            dm_queue,
+            self.host,
+            self.port_out,
+            StringPickler.ArbitraryObject,
+            retry=True,
+        )
+
+        x = []
+        for i in range(30):
+            dm = dm_queue.get(timeout=5)
+            # print(i, dm["source"])
+            if dm["source"] == self.analyzer_source:
+                x.append(dm["data"][self.datakey])
+            if len(x) > 3:
+                break
+        zero = np.mean(x)
+        sigma = np.std(x)
+    except:
+        print("Error tracking baseline")
+
+    return zero, sigma
+    
+    
+    
 
 def track_loss(self):
     try:
