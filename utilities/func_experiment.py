@@ -3,6 +3,7 @@
 import os
 import time
 import numpy as np
+# import socket
 from PyQt6.QtWidgets import QMessageBox
 
 from utilities import func_analyzer, func_mfc
@@ -200,20 +201,30 @@ def create_experiment(self):
         tag = func_analyzer.detect_analyzer_portin(self)
 
     if tag:
-        data_speed = func_analyzer.detect_analyzer_portout(self)
-        print("analyzer port check passed, fitter data speed (s/pt): %s" % data_speed)
-        if data_speed:
-            # ideal value:
-            self.window_points = int(PLOT_WINDOW_LENGTH * 60 / data_speed)
-            self.baseline_points = int(BASELINE_Time * 60 / data_speed)
-            print("ideal point#: ", self.window_points, self.baseline_points)
+        tag = 0
+        for i in range(5):
+            data_speed = func_analyzer.detect_analyzer_portout(self)
+            if data_speed:
+                print("analyzer port check passed, fitter data speed (s/pt): %s" % data_speed)
+                # ideal value:
+                self.window_points = int(PLOT_WINDOW_LENGTH * 60 / data_speed)
+                self.baseline_points = int(BASELINE_Time * 60 / data_speed)
+                print("ideal point#: ", self.window_points, self.baseline_points)
 
-            # practical value: very slow, 3~4 points/min
-            self.window_points = int(PLOT_WINDOW_LENGTH * 3)
-            self.baseline_points = int(BASELINE_Time * 4)
-            print("practical point#: ", self.window_points, self.baseline_points)
-        else:
-            tag = 0
+                # practical value: very slow, 3~4 points/min
+                self.window_points = int(PLOT_WINDOW_LENGTH * 3)
+                self.baseline_points = int(BASELINE_Time * 4)
+                print("practical point#: ", self.window_points, self.baseline_points)
+
+                tag = 1
+                break
+
+        if not tag:
+            self.tab1ExperimentHint.setText(
+                " ! Error: Analyzer output port not ready.\nPlease try again"
+            )
+        # else:
+        #     tag = 0
 
     # send MFC data to analyzer if not yet
     if tag:
@@ -527,6 +538,13 @@ def add_sample(self):
                     self, "Warning", note, QMessageBox.StandardButton.Ok
                 )
 
+        t1 = time.strftime("%Y%m%d")
+        t2 = time.strftime("%H")
+        t3 = time.strftime("%M")
+        self.expAddLineEdit.setText(t1)  # '20211124'
+        self.expAddCombobox1.setCurrentText(t2)  # '08'
+        self.expAddCombobox2.setCurrentText(t3)  # '00'
+
         ## get baseline 1:
         # this method use too much memory
         # print("len baseline", len(self.baseline))
@@ -547,13 +565,6 @@ def add_sample(self):
 
         # track baseline
         self.timer_baseline.start()
-
-        t1 = time.strftime("%Y%m%d")
-        t2 = time.strftime("%H")
-        t3 = time.strftime("%M")
-        self.expAddLineEdit.setText(t1)  # '20211124'
-        self.expAddCombobox1.setCurrentText(t2)  # '08'
-        self.expAddCombobox2.setCurrentText(t3)  # '00'
 
         self.expAddButton.setEnabled(False)
         if self.dropletRadioButton.isChecked():
@@ -625,8 +636,8 @@ def track_baseline1(self):
                 update_endtime(self)
                 print("dropped below")
                 self.tab1ExperimentHint.setText(
-                    "• Concentration has dropped below baseline+%s sigma. You may end now\n"
-                    "Baseline before: %.4E, now: %.4f"
+                    "• Concentration has dropped below baseline+%s sigma.\n"
+                    "Baseline before: %.4E, now: %.4E"
                     % (self.sample_sigma, self.zero1, zero2)
                 )
 
@@ -641,7 +652,7 @@ def track_baseline1(self):
                 update_endtime(self)
 
                 self.tab1ExperimentHint.setText(
-                    "• Baseline is stable for the past 30 mins. You may end now\n"
+                    "• Baseline is stable for the past 30 mins.\n"
                     "Baseline std before: %.4E, now: %.4E" % (self.sigma1, sigma2)
                 )
     except:
@@ -651,37 +662,46 @@ def track_baseline1(self):
 def calculate_zero_sigma(self):
     zero = 0
     sigma = 0
-    try:
-        self.host = self.analyzerIPLineEdit.text()
-        socket.create_connection((self.host, self.port_out), 5)
-        dm_queue = Queue(180)  ## data manager
-        listener = Listener(
-            dm_queue,
-            self.host,
-            self.port_out,
-            StringPickler.ArbitraryObject,
-            retry=True,
-        )
+    # x = []
 
-        x = []
-        for i in range(30):
-            dm = dm_queue.get(timeout=5)
-            # print(i, dm["source"])
-            if dm["source"] == self.analyzer_source:
-                x.append(dm["data"][self.datakey])
-            if len(x) > 3:
-                break
-        zero = np.mean(x)
-        sigma = np.std(x)
-    except:
-        print("Error tracking baseline")
+    while 1:
+        try:
+            # socket.create_connection((self.host, self.port_out), 5)
+            dm_queue = Queue(250)  ## data manager
+            listener = Listener(
+                dm_queue,
+                self.host,
+                self.port_out,
+                StringPickler.ArbitraryObject,
+                retry=True,
+            )
+
+            x = []
+            for i in range(30):
+                dm = dm_queue.get(timeout=5)
+                # print(i, dm["source"])
+                if dm["source"] == self.analyzer_source:
+                    x.append(dm["data"][self.datakey])
+                if len(x) > 2:
+                    break
+
+            # print('zero array:', x)
+            zero = np.mean(x)
+            sigma = np.std(x)
+
+        except:
+            pass
+
+        if zero:
+            break
+
+    # except:
+    #     print("Error tracking baseline")
 
     return zero, sigma
     
-    
-    
 
-def track_loss(self):
+def auto_flow(self):
     try:
         if self.auto_tag1:
             dm_queue = Queue(180)  ## data manager
@@ -712,22 +732,25 @@ def track_loss(self):
 
             elif loss > 1500:
                 self.tab1ExperimentHint.setText(
-                    " ! Concentration too high, failed to automate the experiment.\n"
-                    " Please leave it run, or reduce flow and try again."
+                    " ! Concentration too high, automation may not be ideal.\n"
+                    " Please reduce the flow when you run next time."
                 )
-                self.timer_auto.stop()
+                # self.timer_auto.stop()
 
         # set to maximum flow after baseline drop below e-07
         if self.auto_tag2:
             # concentration = self.y[-1]
             # print('concentration: ', self.y[-1])
-            if self.y[-3] < 5e-7:
+            # if self.y[-3] < 5e-7:
+            zero2, _ = calculate_zero_sigma(self)
+            if zero2 < 5e-7:
                 if self.dropletRadioButton.isChecked():
                     func_mfc.set_mfc_100sccm(self, 100)
                 else:
                     func_mfc.set_mfc_10sccm(self, 10)
                 self.auto_tag2 = 0
                 self.auto_tag3 = 1
+                self.len_baseline = -1
                 print(
                     "auto step3: set to maximum flow rate for quick clean.  ",
                     time.ctime(time.time()),
@@ -735,7 +758,11 @@ def track_loss(self):
 
         if self.auto_tag3:
             if not self.expEndLineEdit.text() == "":
-                end_exp(self)
+                self.len_baseline += 1
+                print('5 min x %s' % self.len_baseline)
+
+                if self.len_baseline == 15:  # 30 min baseline: auto flow timer is 5 min x6
+                    end_exp(self)
 
     except:
         print("Failed to automate the experiment")
@@ -776,10 +803,10 @@ def end_exp(self):
     if self.dropletRadioButton.isChecked():
         self.tankRadioButton.setEnabled(True)
         
-        # shut down gas flow after experiment ends
+        # shut down tank gas flow after experiment ends
         if self.saveGasCheckbox.isChecked():
             func_mfc.stop_mfc2_flow(self)
-            func_mfc.set_mfc_1slpm(self, 0)
+            # func_mfc.set_mfc_1slpm(self, 0)
             func_mfc.stop_send_MFC_data(self)
 
     else:

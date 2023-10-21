@@ -109,7 +109,7 @@ class Window(QWidget):
 
         self.timer_auto = QTimer()
         self.timer_auto.setInterval(300000)  # ms, check loss every 5 mins
-        self.timer_auto.timeout.connect(lambda: func_experiment.track_loss(self))
+        self.timer_auto.timeout.connect(lambda: func_experiment.auto_flow(self))
 
     def set_window_layout(self):
         self.mainlayout()
@@ -573,9 +573,9 @@ class Window(QWidget):
         )
         self.automationCheckbox.setChecked(True)
 
-        self.saveGasCheckbox = QCheckBox("Save N2")
+        self.saveGasCheckbox = QCheckBox("Save gas tank")
         self.saveGasCheckbox.setToolTip(
-            "Shut off dilution and bubble lines\nwhen experiment ends\nto save N2 gas."
+            "Shut off bubble line,\nstop send MFC data to analyzer\nwhen experiment ends\nto save CH4-N2 gas tank."
         )
 
         self.mfcHintLabel = QLabel()

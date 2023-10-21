@@ -58,26 +58,34 @@ def load_experiment(self):
             temp = f.read()
             self.sampleCIDLineEdit.setText(temp)
 
-            try:
-                f = open(os.path.join(fnrp, "row.txt"), "r")
-                temp = f.read()
-                self.oneComboNumLineEdit.setText(temp)
-            except:
-                self.oneComboNumLineEdit.setText("    ")
+            # clear fields before read in new values:
+            self.oneComboNumLineEdit.setText("")
+            self.maxRowLabel.setText("")
+            self.sampleSigmaCombobox.setCurrentText("4")
+            self.row1LineEdit.setText("")
+            self.row2LineEdit.setText("")
+            self.comboRange1LineEdit.setText("")
+            self.comboRange2LineEdit.setText("")
 
-            try:
-                f = open(os.path.join(fnrp, "max_row.txt"), "r")
-                temp = f.read()
-                self.maxRowLabel.setText(temp)
-            except:
-                self.maxRowLabel.setText("    ")
+            # try:
+            f = open(os.path.join(fnrp, "row.txt"), "r")
+            temp = f.read()
+            self.oneComboNumLineEdit.setText(temp)
+            # except:
+            #     pass
 
-            try:
-                f = open(os.path.join(fnrp, "n_sigma.txt"), "r")
-                temp = f.read()
-                self.sampleSigmaCombobox.setCurrentText(temp)
-            except:
-                self.sampleSigmaCombobox.setCurrentText("4")
+            # try:
+            f = open(os.path.join(fnrp, "max_row.txt"), "r")
+            temp = f.read()
+            self.maxRowLabel.setText(temp)
+            # except:
+            #     pass
+
+            # try:
+            f = open(os.path.join(fnrp, "n_sigma.txt"), "r")
+            temp = f.read()
+            self.sampleSigmaCombobox.setCurrentText(temp)
+            # except:
 
             if self.dropletRadioButton.isChecked():
                 print("load droplet")
