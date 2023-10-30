@@ -573,9 +573,9 @@ class Window(QWidget):
         )
         self.automationCheckbox.setChecked(True)
 
-        self.saveGasCheckbox = QCheckBox("Save gas tank")
+        self.saveGasCheckbox = QCheckBox("Gas Off")
         self.saveGasCheckbox.setToolTip(
-            "Shut off bubble line,\nstop send MFC data to analyzer\nwhen experiment ends\nto save CH4-N2 gas tank."
+            "Shut off all MFCs,\nstop sending MFC data to analyzer\nwhen experiment ends."
         )
 
         self.mfcHintLabel = QLabel()

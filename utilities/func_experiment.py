@@ -169,7 +169,7 @@ def datakey_check(self):
 
             if tag:
                 if (
-                    self.dropletRadioButton.isChecked()
+                        self.dropletRadioButton.isChecked()
                 ):  # check datakey: MFC1_flow, MFC2_flow
                     if "MFC1_flow" not in dm["data"]:
                         self.tab1ExperimentHint.setText(
@@ -419,7 +419,7 @@ def data_manager(self):
             self.y.append(dm["data"][self.datakey])
 
             if len(self.y) > self.baseline_points:
-                self.baseline = self.y[-self.baseline_points :]
+                self.baseline = self.y[-self.baseline_points:]
             else:
                 self.baseline = self.y
             # print(self.baseline)
@@ -432,10 +432,10 @@ def data_manager(self):
                     "%H:%M", time.localtime(self.x[-2])
                 )  # previous time string
                 if (
-                    (clock0[-2:] == "59" and clock[-2:] == "00")
-                    or (clock0[-2:] == "29" and clock[-2:] == "30")
-                    # or (clock0[-2:] == "14" and clock[-2:] == "15")
-                    # or (clock0[-2:] == "44" and clock[-2:] == "45")
+                        (clock0[-2:] == "59" and clock[-2:] == "00")
+                        or (clock0[-2:] == "29" and clock[-2:] == "30")
+                        # or (clock0[-2:] == "14" and clock[-2:] == "15")
+                        # or (clock0[-2:] == "44" and clock[-2:] == "45")
                 ):
                     self.xtick.append((t, clock))
             else:  # no tick label yet, add current as the first one
@@ -503,8 +503,8 @@ def start_exp(self):
         self.epoch2 = int(time.time()) + BASELINE_Time * 60 + 600 + 120
         ep = time.strftime("%Y%m%d %H:%M:%S", time.localtime(self.epoch2))
         note1 = (
-            "• Experiment started at %s:%s!\nPlease wait at least 30min, until %s:%s to "
-            % (t2, t3, ep[9:11], ep[12:14])
+                "• Experiment started at %s:%s!\nPlease wait at least 30min, until %s:%s to "
+                % (t2, t3, ep[9:11], ep[12:14])
         )
         if self.dropletRadioButton.isChecked():
             note2 = "add sample."
@@ -569,8 +569,8 @@ def add_sample(self):
         self.expAddButton.setEnabled(False)
         if self.dropletRadioButton.isChecked():
             self.note1 = (
-                "• Sample added at %s:%s! Please run until baseline is stable.\n"
-                "Baseline before: %.4E" % (t2, t3, self.zero1)
+                    "• Sample added at %s:%s! Please run until baseline is stable.\n"
+                    "Baseline before: %.4E" % (t2, t3, self.zero1)
             )
 
             # automation
@@ -590,8 +590,8 @@ def add_sample(self):
 
         else:
             self.note1 = (
-                "• Sample tank connected at %s:%s! Please run until baseline is stable.\n"
-                "Baseline std before: %.4E" % (t2, t3, self.sigma1)
+                    "• Sample tank connected at %s:%s! Please run until baseline is stable.\n"
+                    "Baseline std before: %.4E" % (t2, t3, self.sigma1)
             )
         self.tab1ExperimentHint.setText(self.note1)
 
@@ -631,7 +631,7 @@ def track_baseline1(self):
                 self.tab1ExperimentHint.setText(self.note1 + ", now: %.4E" % zero2)
 
             if (
-                zero2 < self.zero1 + self.sigma1 * self.sample_sigma
+                    zero2 < self.zero1 + self.sigma1 * self.sample_sigma
             ):  # record value on GUI
                 update_endtime(self)
                 print("dropped below")
@@ -649,7 +649,9 @@ def track_baseline1(self):
                 self.tab1ExperimentHint.setText(self.note1 + ", now: %.4E" % sigma2)
 
             if sigma2 < self.sigma1 * 1.1:  # 1.05
+                print('update gas 1')
                 update_endtime(self)
+                print('update gas 2')
 
                 self.tab1ExperimentHint.setText(
                     "• Baseline is stable for the past 30 mins.\n"
@@ -699,7 +701,7 @@ def calculate_zero_sigma(self):
     #     print("Error tracking baseline")
 
     return zero, sigma
-    
+
 
 def auto_flow(self):
     try:
@@ -744,7 +746,8 @@ def auto_flow(self):
             # if self.y[-3] < 5e-7:
             zero2, _ = calculate_zero_sigma(self)
             if zero2 < 5e-7:
-                if self.dropletRadioButton.isChecked():
+                if self.mfc100RadioButton.isChecked():
+                    # if self.dropletRadioButton.isChecked():
                     func_mfc.set_mfc_100sccm(self, 100)
                 else:
                     func_mfc.set_mfc_10sccm(self, 10)
@@ -802,16 +805,17 @@ def end_exp(self):
     self.tab1CreateExpButton.setEnabled(True)
     if self.dropletRadioButton.isChecked():
         self.tankRadioButton.setEnabled(True)
-        
+        # reduce bubble line
+        set_MFC2_flow(self, 0.2)
+
         # shut down tank gas flow after experiment ends
         if self.saveGasCheckbox.isChecked():
             func_mfc.stop_mfc2_flow(self)
-            # func_mfc.set_mfc_1slpm(self, 0)
+            func_mfc.set_mfc_1slpm(self, 0)
             func_mfc.stop_send_MFC_data(self)
 
     else:
         self.dropletRadioButton.setEnabled(True)
-
 
 
 if __name__ == "__main__":
