@@ -762,6 +762,8 @@ def auto_flow(self):
         if self.auto_tag3:
             if not self.expEndLineEdit.text() == "":
                 self.len_baseline += 1
+                update_endtime(self)
+                save_parameter_R_time(self)
                 print('5 min x %s' % self.len_baseline)
 
                 if self.len_baseline == 15:  # 30 min baseline: auto flow timer is 5 min x6
@@ -806,7 +808,7 @@ def end_exp(self):
     if self.dropletRadioButton.isChecked():
         self.tankRadioButton.setEnabled(True)
         # reduce bubble line
-        set_MFC2_flow(self, 0.2)
+        set_MFC2_flow(self)
 
         # shut down tank gas flow after experiment ends
         if self.saveGasCheckbox.isChecked():
