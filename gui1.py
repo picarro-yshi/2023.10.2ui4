@@ -53,6 +53,7 @@ from utilities import (
     func_experiment,
     func_scale,
     load_par,
+    layout4
 )
 
 MINUTE = [str(i).zfill(2) for i in range(60)]
@@ -121,6 +122,8 @@ class Window(QWidget):
         load_par.load_tab1(self)
         load_par.get_port(self)
         load_par.load_tab3(self)
+        layout4.tab4_layout(self)  # sql table
+
 
     def mainlayout(self):
         mainLayout = QVBoxLayout()
@@ -128,9 +131,11 @@ class Window(QWidget):
         self.tab1 = QWidget()
         self.tab2 = QWidget()
         self.tab3 = QWidget()
+        self.tab4 = QWidget()
         tabs.addTab(self.tab1, "     ⬥ Experiment Settings     ")
         tabs.addTab(self.tab2, "  ⬥ Spectrum Viewer Real Time  ")
         tabs.addTab(self.tab3, "     ⬥ Hardware Detection      ")
+        tabs.addTab(self.tab4, "     ⬥ Compound Inventory      ")
 
         mainLayout.addWidget(tabs)
         self.setLayout(mainLayout)

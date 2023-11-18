@@ -67,25 +67,27 @@ def load_experiment(self):
             self.comboRange1LineEdit.setText("")
             self.comboRange2LineEdit.setText("")
 
-            # try:
-            f = open(os.path.join(fnrp, "row.txt"), "r")
-            temp = f.read()
-            self.oneComboNumLineEdit.setText(temp)
-            # except:
-            #     pass
+            try:
+                f = open(os.path.join(fnrp, "row.txt"), "r")
+                temp = f.read()
+                self.oneComboNumLineEdit.setText(temp)
+            except:
+                pass
 
-            # try:
-            f = open(os.path.join(fnrp, "max_row.txt"), "r")
-            temp = f.read()
-            self.maxRowLabel.setText(temp)
-            # except:
-            #     pass
+            # file may not exist
+            try:
+                f = open(os.path.join(fnrp, "max_row.txt"), "r")
+                temp = f.read()
+                self.maxRowLabel.setText(temp)
+            except:
+                pass
 
-            # try:
-            f = open(os.path.join(fnrp, "n_sigma.txt"), "r")
-            temp = f.read()
-            self.sampleSigmaCombobox.setCurrentText(temp)
-            # except:
+            try:
+                f = open(os.path.join(fnrp, "n_sigma.txt"), "r")
+                temp = f.read()
+                self.sampleSigmaCombobox.setCurrentText(temp)
+            except:
+                pass
 
             if self.dropletRadioButton.isChecked():
                 print("load droplet")
