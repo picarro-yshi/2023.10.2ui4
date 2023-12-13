@@ -43,8 +43,8 @@ from PyQt6.QtWidgets import (
     QButtonGroup,
 )
 
-from PyQt6.QtWebEngineWidgets import QWebEngineView
-from PyQt6.QtCore import QUrl
+# from PyQt6.QtWebEngineWidgets import QWebEngineView
+# from PyQt6.QtCore import QUrl
 
 from pyqtgraph import PlotWidget
 import pyqtgraph as pg
