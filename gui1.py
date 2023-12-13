@@ -42,6 +42,10 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QButtonGroup,
 )
+
+from PyQt6.QtWebEngineWidgets import QWebEngineView
+from PyQt6.QtCore import QUrl
+
 from pyqtgraph import PlotWidget
 import pyqtgraph as pg
 
@@ -52,6 +56,7 @@ from utilities import (
     func_calibration,
     func_experiment,
     func_scale,
+    func_power,
     load_par,
     layout4
 )
@@ -123,6 +128,7 @@ class Window(QWidget):
         load_par.get_port(self)
         load_par.load_tab3(self)
         layout4.tab4_layout(self)  # sql table
+        self.tab5_layout()
 
 
     def mainlayout(self):
@@ -132,10 +138,12 @@ class Window(QWidget):
         self.tab2 = QWidget()
         self.tab3 = QWidget()
         self.tab4 = QWidget()
+        self.tab5 = QWidget()
         tabs.addTab(self.tab1, "     ⬥ Experiment Settings     ")
         tabs.addTab(self.tab2, "  ⬥ Spectrum Viewer Real Time  ")
         tabs.addTab(self.tab3, "     ⬥ Hardware Detection      ")
         tabs.addTab(self.tab4, "     ⬥ Compound Inventory      ")
+        # tabs.addTab(self.tab5, "     ⬥ Heater Power Switch     ")
 
         mainLayout.addWidget(tabs)
         self.setLayout(mainLayout)
@@ -571,23 +579,29 @@ class Window(QWidget):
         grid.addWidget(self.tab1MFC10Button, 3, 4)
 
         # layout
-        self.automationCheckbox = QCheckBox("Automate the experiment.")
+        self.automationCheckbox = QCheckBox("Automate Exp.")
         self.automationCheckbox.setToolTip(
             "Set the flows automatically.\n"
             "take effect only before\nclick the 'Add Sample' Button."
         )
         self.automationCheckbox.setChecked(True)
 
-        self.saveGasCheckbox = QCheckBox("Gas Off")
-        self.saveGasCheckbox.setToolTip(
-            "Shut off all MFCs,\nstop sending MFC data to analyzer\nwhen experiment ends."
+        self.heater1Checkbox = QCheckBox("Heater1")
+        self.heater1Checkbox.setDisabled(True)
+        self.heater1Checkbox.setToolTip(
+            "Use heater 1, 2:\nturn on heater after droplet is added and \nturn off heater when experiment ends."
+            "\nTemperature needs to be set manually.\nEnable them using Tab3 'Detect' button."
         )
+
+        self.heater2Checkbox = QCheckBox("Heater2")
+        self.heater2Checkbox.setDisabled(True)
 
         self.mfcHintLabel = QLabel()
         # self.mfcHintLabel.setStyleSheet(style.grey1())
 
         layout.addWidget(self.automationCheckbox)
-        layout.addWidget(self.saveGasCheckbox)
+        layout.addWidget(self.heater1Checkbox)
+        layout.addWidget(self.heater2Checkbox)
         layout.addWidget(self.mfcHintLabel)
 
     # 4 round buttons
@@ -1033,12 +1047,14 @@ class Window(QWidget):
         grid1 = QGridLayout()  # analyzer
         grid2 = QGridLayout()  # MFC
         grid3 = QGridLayout()  # scale
+        grid4 = QGridLayout()  # power switch for heater
 
         self.tab3_layout_left.addStretch()
         self.tab3_layout_left.addLayout(layout1)
         self.tab3_layout_left.addLayout(grid1)
         self.tab3_layout_left.addLayout(grid2)
         self.tab3_layout_left.addLayout(grid3)
+        self.tab3_layout_left.addLayout(grid4)
         self.tab3_layout_left.addStretch()
 
         # system
@@ -1047,6 +1063,7 @@ class Window(QWidget):
         layout3 = QHBoxLayout()
 
         self.portListLabel = QLabel()
+        # self.portListLabel = QTextEdit()
         self.portListLabel.setStyleSheet("background-color: white")
         self.portListLabel.setTextInteractionFlags(
             Qt.TextInteractionFlag.TextSelectableByMouse
@@ -1192,6 +1209,60 @@ class Window(QWidget):
 
         grid3.addWidget(label_scale3, 2, 0)
         grid3.addWidget(self.scalePortLineEdit, 2, 1)
+
+        # Heater power switch
+        label_power1 = QLabel("Heat Tape Power Switch")
+        label_power1.setStyleSheet(style.headline2())
+
+        label_power2 = QLabel("IP Address of this Computer: ")
+        self.computerIPAddressLineEdit = QLineEdit()
+        button_computerIP = QPushButton("Get")
+        button_computerIP.clicked.connect(lambda: func_power.ip_thisPC(self))
+
+        label_power3 = QLabel("IP Address of Power Switch: ")
+        self.powerSwitchIPAddressLineEdit = QLineEdit()
+        button_powerIP = QPushButton("Detect")
+        button_powerIP.clicked.connect(lambda: func_power.power_connect(self))
+        self.powerHintLabel = QLabel()
+
+        label_heater1 = QLabel("Heater 1:")
+        label_heater1.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.heater1Button = QPushButton("ON/OFF")
+        self.heater1Button.clicked.connect(lambda: func_power.button_click(self, 1, self.heater1Button))
+        self.heater1Button.setEnabled(False)
+
+        label_heater2 = QLabel("Heater 2:")
+        label_heater2.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.heater2Button = QPushButton("ON/OFF")
+        self.heater2Button.clicked.connect(lambda: func_power.button_click(self, 2, self.heater2Button))
+        self.heater2Button.setEnabled(False)
+
+        grid4.addWidget(label_power1, 0, 0, 1, 4)
+        grid4.addWidget(label_power2, 1, 0, 1, 2)
+        grid4.addWidget(self.computerIPAddressLineEdit, 1, 2, 1, 2)
+        grid4.addWidget(button_computerIP, 1, 4)
+
+        grid4.addWidget(label_power3, 2, 0, 1, 2)
+        grid4.addWidget(self.powerSwitchIPAddressLineEdit, 2, 2, 1, 2)
+        grid4.addWidget(button_powerIP, 2, 4)
+        grid4.addWidget(self.powerHintLabel, 2, 5)
+
+        grid4.addWidget(label_heater1, 3, 0)
+        grid4.addWidget(self.heater1Button, 3, 1)
+        grid4.addWidget(label_heater2, 3, 3)
+        grid4.addWidget(self.heater2Button, 3, 4)
+
+
+
+    def tab5_layout(self):
+        mainLayout = QVBoxLayout()
+        self.tab5.setLayout(mainLayout)
+
+        # web = QWebEngineView()
+        # mainLayout.addWidget(web)
+        # web.load(QUrl("http://10.100.2.71/api/control?target=outlet2&action=off"))
+        # web.show()
+
 
     # //////////////////// functions
     # in utility folder

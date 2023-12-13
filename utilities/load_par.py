@@ -109,3 +109,17 @@ def load_tab3(self):
         self.scalePortLineEdit.setText(temp[1])
     except:
         print("No scale ip or port.")
+
+    try:
+        with open(os.path.join("par1", "IP_computer.txt"), "r") as f:
+            temp = f.read()
+        self.computerIPAddressLineEdit.setText(temp)
+    except:
+        print("No IP address for this computer.")
+
+    try:
+        with open(os.path.join("par1", "IP_powerswitch.txt"), "r") as f:
+            temp = f.read()
+        self.powerSwitchIPAddressLineEdit.setText(temp)
+    except:
+        print("No IP address for power switch.")

@@ -6,7 +6,7 @@ import numpy as np
 # import socket
 from PyQt6.QtWidgets import QMessageBox
 
-from utilities import func_analyzer, func_mfc
+from utilities import func_analyzer, func_mfc, func_power
 
 path_current = os.getcwd()  # when cited from gui1 this will be the parent path
 # path_parent= os.path.abspath(os.path.join(path_current, os.pardir))
@@ -32,7 +32,6 @@ def choose_droplet(self):
     self.sampleTankConcLineEdit.setDisabled(True)
     self.aqCheckbox.setDisabled(False)  # aqueous droplet
     self.automationCheckbox.setDisabled(False)
-    self.saveGasCheckbox.setDisabled(False)
 
     ## button tips
     self.expStartButton.setToolTip(
@@ -53,7 +52,6 @@ def choose_tank(self):
     self.sampleTankConcLineEdit.setDisabled(False)
     self.aqCheckbox.setDisabled(True)  # aqueous droplet
     self.automationCheckbox.setDisabled(True)
-    self.saveGasCheckbox.setDisabled(True)
 
     ## button tips
     self.expStartButton.setToolTip("Start experiment.\nRecord start time.")
@@ -583,6 +581,18 @@ def add_sample(self):
                 self.auto_tag3 = 0  # stop flow
                 self.timer_auto.start()
                 print("auto step1: set to 20% flow rate.")
+
+                # turn on heater if needed:
+                if self.heater1Checkbox.isEnabled():
+                    if self.heater1Checkbox.isChecked():
+                        self.heater1Button.setText("OFF")
+                        func_power.button_click(self, 1, self.heater1Button)
+
+                if self.heater2Checkbox.isEnabled():
+                    if self.heater2Checkbox.isChecked():
+                        self.heater2Button.setText("OFF")
+                        func_power.button_click(self, 2, self.heater2Button)
+
             else:
                 set_MFC2_flow(self)
 
@@ -745,7 +755,7 @@ def auto_flow(self):
             # print('concentration: ', self.y[-1])
             # if self.y[-3] < 5e-7:
             zero2, _ = calculate_zero_sigma(self)
-            if zero2 < 5e-7:
+            if zero2 < 9e-7:
                 if self.mfc100RadioButton.isChecked():
                     # if self.dropletRadioButton.isChecked():
                     func_mfc.set_mfc_100sccm(self, 100)
@@ -810,11 +820,16 @@ def end_exp(self):
         # reduce bubble line
         set_MFC2_flow(self)
 
-        # shut down tank gas flow after experiment ends
-        if self.saveGasCheckbox.isChecked():
-            func_mfc.stop_mfc2_flow(self)
-            func_mfc.set_mfc_1slpm(self, 0)
-            func_mfc.stop_send_MFC_data(self)
+        # shut down heater if needed
+        if self.heater1Checkbox.isEnabled():
+            if self.heater1Checkbox.isChecked():
+                self.heater1Button.setText("ON")
+                func_power.button_click(self, 1, self.heater1Button)
+
+        if self.heater2Checkbox.isEnabled():
+            if self.heater2Checkbox.isChecked():
+                self.heater2Button.setText("ON")
+                func_power.button_click(self, 2, self.heater2Button)
 
     else:
         self.dropletRadioButton.setEnabled(True)

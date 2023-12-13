@@ -3,8 +3,6 @@
 import os
 import sqlite3
 
-# from PyQt6.QtGui import QPixmap, QIcon, QColor
-# from PyQt6.QtCore import Qt, QTimer, QSize
 from PyQt6.QtWidgets import (
     QPushButton,
     QLabel,
@@ -22,8 +20,17 @@ from pyqtgraph import PlotWidget
 import pyqtgraph as pg
 
 import style
-# db_path = '/Users/yshi/Documents/2025recent/Compounds.db'
-db_path = '/Volumes/Data/crd_G9000/AVXxx/3610-NUV1022/R&D/Calibration/Compounds.db'
+
+import platform
+opsystem = platform.system()
+if opsystem == "Darwin":
+    rdisk = '/Volumes/Data'
+elif opsystem == "Linux":
+    rdisk = '/mnt/r'
+else:  # 'Windows'
+    rdisk = 'R:'
+
+db_path = rdisk + '/crd_G9000/AVXxx/3610-NUV1022/R&D/Calibration/Compounds.db'
 con = sqlite3.connect(db_path)
 cur = con.cursor()
 
@@ -145,6 +152,7 @@ def createTab4_Layout1(self):
     button_all = QPushButton("Show whole database")
     button_all.clicked.connect(lambda: query_all(self))
     button_todo = QPushButton("Show to-do list")
+    button_todo.setStyleSheet("font: bold")
     button_todo.clicked.connect(lambda: query_todo(self))
 
     label_todo = QLabel("To-do list are compounds that are:\n"
