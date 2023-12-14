@@ -347,9 +347,11 @@ def getClickedCell(self, row, column):
     self.q_cid = self.table.item(row, 0).text()
     self.q_name = self.table.item(row, 1).text()
     self.q_cas = self.table.item(row, 2).text()
+    self.q_barcode = self.table.item(row, 5).text()
     self.q_mw = self.table.item(row, 6).text()
 
-    self.label_select.setText(self.q_cid + "  " + self.q_name + "  " + self.q_cas)
+    x = " ❚ "
+    self.label_select.setText(self.q_cid + x + self.q_name + x + self.q_cas + x + self.q_barcode)
 
 
 def query_select(self):

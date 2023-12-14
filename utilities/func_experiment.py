@@ -32,6 +32,9 @@ def choose_droplet(self):
     self.sampleTankConcLineEdit.setDisabled(True)
     self.aqCheckbox.setDisabled(False)  # aqueous droplet
     self.automationCheckbox.setDisabled(False)
+    self.peakRadioButton.setEnabled(True)
+    self.peakRadioButton.setChecked(True)
+    # self.peakRadioButton.setCheckable(True)
 
     ## button tips
     self.expStartButton.setToolTip(
@@ -52,6 +55,9 @@ def choose_tank(self):
     self.sampleTankConcLineEdit.setDisabled(False)
     self.aqCheckbox.setDisabled(True)  # aqueous droplet
     self.automationCheckbox.setDisabled(True)
+    self.rowNumRadioButton.setChecked(True)
+    self.peakRadioButton.setEnabled(False)
+    # self.peakRadioButton.setCheckable(False)
 
     ## button tips
     self.expStartButton.setToolTip("Start experiment.\nRecord start time.")

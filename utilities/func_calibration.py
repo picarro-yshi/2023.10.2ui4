@@ -197,7 +197,7 @@ def calculate(self):
             try:
                 row = int(self.oneComboNumLineEdit.text())
             except:
-                row = 300
+                row = 100
 
             if self.dropletRadioButton.isChecked():
                 weight = float(self.sampleWeightLineEdit.text())
@@ -206,14 +206,8 @@ def calculate(self):
 
                 if self.aqCheckbox.isChecked():  # aqueous solution
                     print("aqueous droplet")
-                    # (
-                    #     self.F1,
-                    #     self.F2,
-                    #     self.F3,
-                    #     self.F4,
-                    #     max_row,
-                    # ) 
-                    
+
+
                     result = droplet_aq.aqueous_droplet(
                         self.experiment_path,
                         self.sample,
@@ -230,14 +224,6 @@ def calculate(self):
 
                 else:  # pure analyte
                     print("droplet test")
-
-                    # (
-                    #     self.F1,
-                    #     self.F2,
-                    #     self.F3,
-                    #     self.F4,
-                    #     max_row,
-                    # ) 
                     result = droplet.calibration_droplet(
                         self.experiment_path,
                         self.sample,
@@ -340,12 +326,12 @@ def combo_study(self):
         try:
             row1 = int(self.row1LineEdit.text())
         except:
-            pass
+            row1 = 50
 
         try:
             row2 = int(self.row2LineEdit.text())
         except:
-            pass
+            row2 = 100
 
     if self.peakRadioButton.isChecked():
         try:

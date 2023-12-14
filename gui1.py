@@ -451,10 +451,10 @@ class Window(QWidget):
         self.dropletRadioButton.setStyleSheet("color: red")
         self.tankRadioButton.setStyleSheet("color: black")
 
-        self.dropletRadioButton.toggled.connect(
-            lambda: func_experiment.choose_droplet(self)
-        )
-        self.tankRadioButton.toggled.connect(lambda: func_experiment.choose_tank(self))
+        # self.dropletRadioButton.toggled.connect(
+        #     lambda: func_experiment.choose_droplet(self)
+        # )
+        # self.tankRadioButton.toggled.connect(lambda: func_experiment.choose_tank(self))
 
         self.bg1 = QButtonGroup()
         self.bg1.addButton(self.dropletRadioButton)
@@ -482,7 +482,7 @@ class Window(QWidget):
 
         self.createTab1MFCLayout()
         self.createTab1TimeLayout()
-        func_experiment.choose_droplet(self)
+        # func_experiment.choose_droplet(self)
 
     def createTab1MFCLayout(self):
         grid = QGridLayout()
@@ -898,7 +898,7 @@ class Window(QWidget):
         label_step2_row2 = QLabel("vs Row 2")
         self.row2LineEdit = QLineEdit()
 
-        self.peakRadioButton = QRadioButton("Use Peak Height: ", self)
+        self.peakRadioButton = QRadioButton("Use Peak Height (droplet only): ", self)
         label_step2_peak1 = QLabel("Peak")
         label_step2_peak2 = QLabel("vs Percentage %:")
         label_step2_peak2.setAlignment(Qt.AlignmentFlag.AlignRight)
@@ -938,6 +938,13 @@ class Window(QWidget):
         grid.addWidget(self.comboRange1LineEdit, 5, 2)
         grid.addWidget(label_step2_range3, 5, 3)
         grid.addWidget(self.comboRange2LineEdit, 5, 4)
+
+        func_experiment.choose_droplet(self)
+        self.dropletRadioButton.toggled.connect(
+            lambda: func_experiment.choose_droplet(self)
+        )
+        self.tankRadioButton.toggled.connect(lambda: func_experiment.choose_tank(self))
+
 
     def tab2_layout(self):  # real time spectrum viewer
         mainLayout = QVBoxLayout()
