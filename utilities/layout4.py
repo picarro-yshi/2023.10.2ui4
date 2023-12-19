@@ -1,5 +1,4 @@
 ## tab4 layout
-# import sys
 import os
 import sqlite3
 
@@ -16,8 +15,6 @@ from PyQt6.QtWidgets import (
     QButtonGroup,
     QRadioButton,
 )
-from pyqtgraph import PlotWidget
-import pyqtgraph as pg
 
 import style
 
@@ -91,10 +88,10 @@ def createTab4_Layout1(self):
     self.tab4CalRadioButton3 = QRadioButton()
     self.tab4CalRadioButton2.setChecked(True)
 
-    self.bg1 = QButtonGroup()
-    self.bg1.addButton(self.tab4CalRadioButton1)
-    self.bg1.addButton(self.tab4CalRadioButton2)
-    self.bg1.addButton(self.tab4CalRadioButton3)
+    self.tab4_bg1 = QButtonGroup()
+    self.tab4_bg1.addButton(self.tab4CalRadioButton1)
+    self.tab4_bg1.addButton(self.tab4CalRadioButton2)
+    self.tab4_bg1.addButton(self.tab4CalRadioButton3)
     
     button1 = QPushButton("Query")
     button1.clicked.connect(lambda: query_cal(self))
@@ -106,10 +103,10 @@ def createTab4_Layout1(self):
     self.tab4ExistRadioButton3 = QRadioButton()
     self.tab4ExistRadioButton1.setChecked(True)
 
-    self.bg2 = QButtonGroup()
-    self.bg2.addButton(self.tab4ExistRadioButton1)
-    self.bg2.addButton(self.tab4ExistRadioButton2)
-    self.bg2.addButton(self.tab4ExistRadioButton3)
+    self.tab4_bg2 = QButtonGroup()
+    self.tab4_bg2.addButton(self.tab4ExistRadioButton1)
+    self.tab4_bg2.addButton(self.tab4ExistRadioButton2)
+    self.tab4_bg2.addButton(self.tab4ExistRadioButton3)
 
     button2 = QPushButton("Query")
     button2.clicked.connect(lambda: query_exist(self))
@@ -121,10 +118,10 @@ def createTab4_Layout1(self):
     self.tab4StateRadioButton3 = QRadioButton()
     self.tab4StateRadioButton1.setChecked(True)
 
-    self.bg3 = QButtonGroup()
-    self.bg3.addButton(self.tab4StateRadioButton1)
-    self.bg3.addButton(self.tab4StateRadioButton2)
-    self.bg3.addButton(self.tab4StateRadioButton3)
+    self.tab4_bg3 = QButtonGroup()
+    self.tab4_bg3.addButton(self.tab4StateRadioButton1)
+    self.tab4_bg3.addButton(self.tab4StateRadioButton2)
+    self.tab4_bg3.addButton(self.tab4StateRadioButton3)
 
     button3 = QPushButton("Query")
     button3.clicked.connect(lambda: query_state(self))
@@ -136,10 +133,10 @@ def createTab4_Layout1(self):
     self.tab4FitterRadioButton3 = QRadioButton()
     self.tab4FitterRadioButton1.setChecked(True)
 
-    self.bg4 = QButtonGroup()
-    self.bg4.addButton(self.tab4FitterRadioButton1)
-    self.bg4.addButton(self.tab4FitterRadioButton2)
-    self.bg4.addButton(self.tab4FitterRadioButton3)
+    self.tab4_bg4 = QButtonGroup()
+    self.tab4_bg4.addButton(self.tab4FitterRadioButton1)
+    self.tab4_bg4.addButton(self.tab4FitterRadioButton2)
+    self.tab4_bg4.addButton(self.tab4FitterRadioButton3)
 
     button4 = QPushButton("Query")
     button4.clicked.connect(lambda: query_fitter(self))

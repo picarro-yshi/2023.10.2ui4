@@ -34,15 +34,15 @@ def choose_droplet(self):
     self.automationCheckbox.setDisabled(False)
     self.peakRadioButton.setEnabled(True)
     self.peakRadioButton.setChecked(True)
-    # self.peakRadioButton.setCheckable(True)
 
     ## button tips
     self.expStartButton.setToolTip(
         "Start experiment,\nsend Alicat data to analyzer.\n" "Record start time."
     )
     self.expAddButton.setToolTip(
-        "Steps:\n->Click 'Stop Flow' button to\nstop bubble line\n->Add sample\n"
-        "->Click this button to\n record time and weight."
+        "Steps:\n->Click 'Stop MFC2 Flow' button to\nstop bubble line;\n->Add sample;\n"
+        "->Click this button to\n record time and weight;\n"
+        "->Wait until baseline dropped to\nprevious level to end experiment."
     )
 
 
@@ -62,9 +62,10 @@ def choose_tank(self):
     ## button tips
     self.expStartButton.setToolTip("Start experiment.\nRecord start time.")
     self.expAddButton.setToolTip(
-        "Steps:\nDisconnect Zero Air line\n->Connect sample line\n"
+        "Steps:\nDisconnect Zero Air line;\n->Connect sample line;\n"
         "->Click this button to record\n"
-        " time and tank concentration."
+        " time and tank concentration;\n"
+        "->Wait until baseline is stable\nfor 30 mins to end the experiment."
     )
 
 
@@ -665,10 +666,8 @@ def track_baseline1(self):
                 self.tab1ExperimentHint.setText(self.note1 + ", now: %.4E" % sigma2)
 
             if sigma2 < self.sigma1 * 1.1:  # 1.05
-                print('update gas 1')
                 update_endtime(self)
-                print('update gas 2')
-
+                print("concentration is stable.")
                 self.tab1ExperimentHint.setText(
                     "• Baseline is stable for the past 30 mins.\n"
                     "Baseline std before: %.4E, now: %.4E" % (self.sigma1, sigma2)
@@ -680,7 +679,6 @@ def track_baseline1(self):
 def calculate_zero_sigma(self):
     zero = 0
     sigma = 0
-    # x = []
 
     while 1:
         try:
@@ -712,9 +710,6 @@ def calculate_zero_sigma(self):
 
         if zero:
             break
-
-    # except:
-    #     print("Error tracking baseline")
 
     return zero, sigma
 
@@ -757,13 +752,10 @@ def auto_flow(self):
 
         # set to maximum flow after baseline drop below e-07
         if self.auto_tag2:
-            # concentration = self.y[-1]
             # print('concentration: ', self.y[-1])
-            # if self.y[-3] < 5e-7:
             zero2, _ = calculate_zero_sigma(self)
             if zero2 < 9e-7:
                 if self.mfc100RadioButton.isChecked():
-                    # if self.dropletRadioButton.isChecked():
                     func_mfc.set_mfc_100sccm(self, 100)
                 else:
                     func_mfc.set_mfc_10sccm(self, 10)

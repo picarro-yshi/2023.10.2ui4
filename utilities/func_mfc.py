@@ -18,15 +18,15 @@ def set_mfc_1slpm(self, x=None):
             F1 = x
 
         if F1 > 1 or F1 < 0:
-            self.mfcHintLabel.setText("! Error: Input a value between 0-1.")
+            self.mfcHintLabel.setText("! MFC1 value error.")
         else:
             port_mfc = self.mfcPortCombobox.currentText()
             adr1 = self.MFC1AddressLineEdit.text()
             flow_controller1 = FlowController(port=port_mfc, address=adr1)
             flow_controller1.set_flow_rate(flow=F1)
-            self.mfcHintLabel.setText("• Dilution line set to " + str(F1))
+            self.mfcHintLabel.setText("• MFC1 set to " + str(F1))
     except:
-        self.mfcHintLabel.setText("! Error: unable to set MFC1 flow.")
+        self.mfcHintLabel.setText("! Error set MFC1.")
 
 
 def set_mfc_100sccm(self, x=None):
@@ -37,7 +37,7 @@ def set_mfc_100sccm(self, x=None):
             F2 = x
 
         if F2 > 100 or F2 < 0:
-            self.mfcHintLabel.setText("! Error: Input a value between 0-100.")
+            self.mfcHintLabel.setText("! MFC2 value error.")
         else:
             port_mfc = self.mfcPortCombobox.currentText()
             adr1 = self.MFC1AddressLineEdit.text()
@@ -48,9 +48,9 @@ def set_mfc_100sccm(self, x=None):
             flow_controller1.set_flow_rate(flow=F1)
             flow_controller2.set_flow_rate(flow=F2)
             self.tab1MFC1LineEdit.setText(str(F1))
-            self.mfcHintLabel.setText("• Bubble line set to " + str(F2))
+            self.mfcHintLabel.setText("• MFC2 set to " + str(F2))
     except:
-        self.mfcHintLabel.setText("! Error: Unable to set MFC2 flow.")
+        self.mfcHintLabel.setText("! Error set MFC2.")
 
 
 def set_mfc_10sccm(self, x=None):
@@ -61,7 +61,7 @@ def set_mfc_10sccm(self, x=None):
             F2 = x
 
         if F2 > 10 or F2 < 0:
-            self.mfcHintLabel.setText("! Error: Input a value between 0-10.")
+            self.mfcHintLabel.setText("! MFC2 value error.")
         else:
             port_mfc = self.mfcPortCombobox.currentText()
             adr1 = self.MFC1AddressLineEdit.text()
@@ -72,9 +72,9 @@ def set_mfc_10sccm(self, x=None):
             flow_controller1.set_flow_rate(flow=F1)
             flow_controller2.set_flow_rate(flow=F2)
             self.tab1MFC1LineEdit.setText(str(F1))
-            self.mfcHintLabel.setText("• Bubble line set to " + str(F2))
+            self.mfcHintLabel.setText("• MFC2 set to " + str(F2))
     except:
-        self.mfcHintLabel.setText("! Error: Unable to set MFC2 flow.")
+        self.mfcHintLabel.setText("! Error set MFC2.")
 
 
 def choose_100sccm(self):
@@ -111,9 +111,9 @@ def stop_mfc2_flow(self):  # stop MFC2, set MFC1 to maximum
         flow_controller2large.set_flow_rate(flow=0)
         flow_controller2small.set_flow_rate(flow=0)
 
-        self.mfcHintLabel.setText("• MFC2 Bubble line stopped.")
+        self.mfcHintLabel.setText("• MFC2 flow stopped.")
     except:
-        self.mfcHintLabel.setText("! Error: Unable to stop the flow.")
+        self.mfcHintLabel.setText("! Error stop MFC2 flow.")
 
 
 def send_MFC_data(self):
