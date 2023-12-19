@@ -780,8 +780,11 @@ def createTab1CalibrationLayout(self):
     gap = QLabel()
     label_step2_row1 = QLabel("Row 1")
     self.row1LineEdit = QLineEdit()
+    self.row1LineEdit.setToolTip("Leave blank to use\nthe default value: 50")
+
     label_step2_row2 = QLabel("vs Row 2")
     self.row2LineEdit = QLineEdit()
+    self.row2LineEdit.setToolTip("Leave blank to use\nthe default value: 100")
 
     self.peakRadioButton = QRadioButton("Use Peak Height (droplet only): ", self)
     label_step2_peak1 = QLabel("Peak")
@@ -795,15 +798,15 @@ def createTab1CalibrationLayout(self):
     self.tab1_bg3.addButton(self.peakRadioButton)
 
     label_step2_range1 = QLabel(
-        "Row Range for Plots: (leave blank to use defaults)"
+        "Row Range for Plots:"
     )
     label_step2_range2 = QLabel("From:")
     label_step2_range3 = QLabel("To:")
     label_step2_range3.setAlignment(Qt.AlignmentFlag.AlignRight)
     self.comboRange1LineEdit = QLineEdit()
-    self.comboRange1LineEdit.setToolTip("Default to minimal")
+    self.comboRange1LineEdit.setToolTip("Leave blank to use\nthe default value: minimal")
     self.comboRange2LineEdit = QLineEdit()
-    self.comboRange2LineEdit.setToolTip("Default to maximal")
+    self.comboRange2LineEdit.setToolTip("Leave blank to use\nthe default value: maximal")
 
     grid.addWidget(gap, 1, 0)
     grid.addWidget(label_step2_row1, 1, 1)
