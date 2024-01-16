@@ -28,6 +28,12 @@ else:  # 'Windows'
     rdisk = 'R:'
 
 db_path = rdisk + '/crd_G9000/AVXxx/3610-NUV1022/R&D/Calibration/Compounds.db'
+if os.path.isdir(rdisk):
+    print('R drive connected.')
+else:
+    print('R drive is not connected, please connect first.')
+    exit()
+
 con = sqlite3.connect(db_path)
 cur = con.cursor()
 

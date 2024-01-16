@@ -3,7 +3,8 @@
 import os
 import time
 import numpy as np
-# import socket
+import urllib.request
+
 from PyQt6.QtWidgets import QMessageBox
 
 from utilities import func_analyzer, func_mfc, func_power
@@ -737,13 +738,13 @@ def auto_flow(self):
             # avoid the spike, set to full flow rate after loss < 750
             if loss == 0:
                 self.tab1ExperimentHint.setText(" ! Error: no loss value.\n")
-            elif loss < 750:
+            elif loss < 900:
                 set_MFC2_flow(self)
                 self.auto_tag1 = 0
                 self.auto_tag2 = 1
                 print("auto step2: set to full flow rate.  ", time.ctime(time.time()))
 
-            elif loss > 1500:
+            elif loss > 1700:
                 self.tab1ExperimentHint.setText(
                     " ! Concentration too high, automation may not be ideal.\n"
                     " Please reduce the flow when you run next time."
@@ -762,10 +763,19 @@ def auto_flow(self):
                 self.auto_tag2 = 0
                 self.auto_tag3 = 1
                 self.len_baseline = -1
-                print(
-                    "auto step3: set to maximum flow rate for quick clean.  ",
-                    time.ctime(time.time()),
-                )
+
+                # turn on heater if needed
+                if self.heater1Checkbox.isEnabled() and self.heater1Checkbox.isChecked():
+                    self.heater1Button.setText("OFF")
+                    func_power.button_click(self, 1, self.heater1Button)
+                    print("heater 1 is turned on.")
+
+                if self.heater2Checkbox.isEnabled() and self.heater2Checkbox.isChecked():
+                    self.heater2Button.setText("OFF")
+                    func_power.button_click(self, 2, self.heater2Button)
+                    print("heater 2 is turned on.")
+
+                print("auto step3: set to maximum flow rate for quick clean. ", time.ctime(time.time()))
 
         if self.auto_tag3:
             if not self.expEndLineEdit.text() == "":
@@ -819,15 +829,13 @@ def end_exp(self):
         set_MFC2_flow(self)
 
         # shut down heater if needed
-        if self.heater1Checkbox.isEnabled():
-            if self.heater1Checkbox.isChecked():
-                self.heater1Button.setText("ON")
-                func_power.button_click(self, 1, self.heater1Button)
+        if self.heater1Checkbox.isEnabled() and self.heater1Checkbox.isChecked():
+            self.heater1Button.setText("ON")
+            func_power.button_click(self, 1, self.heater1Button)
 
-        if self.heater2Checkbox.isEnabled():
-            if self.heater2Checkbox.isChecked():
-                self.heater2Button.setText("ON")
-                func_power.button_click(self, 2, self.heater2Button)
+        if self.heater2Checkbox.isEnabled() and self.heater2Checkbox.isChecked():
+            self.heater2Button.setText("ON")
+            func_power.button_click(self, 2, self.heater2Button)
 
     else:
         self.dropletRadioButton.setEnabled(True)

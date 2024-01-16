@@ -473,7 +473,7 @@ def createTab1MFCLayout(self):
     self.heater1Checkbox = QCheckBox("Heater1")
     self.heater1Checkbox.setDisabled(True)
     self.heater1Checkbox.setToolTip(
-        "Use heater 1, 2:\nturn on heater after droplet is added and \nturn off heater when experiment ends."
+        "Use heater 1, 2:\nturn on heater after concentration is below 1e-6 and \nturn off heater when experiment ends."
         "\nTemperature needs to be set manually.\nEnable them using Tab3 'Detect' button."
     )
 
