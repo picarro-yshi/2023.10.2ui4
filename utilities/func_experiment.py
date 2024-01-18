@@ -590,16 +590,16 @@ def add_sample(self):
                 self.timer_auto.start()
                 print("auto step1: set to 20% flow rate.")
 
-                # turn on heater if needed:
-                if self.heater1Checkbox.isEnabled():
-                    if self.heater1Checkbox.isChecked():
-                        self.heater1Button.setText("OFF")
-                        func_power.button_click(self, 1, self.heater1Button)
-
-                if self.heater2Checkbox.isEnabled():
-                    if self.heater2Checkbox.isChecked():
-                        self.heater2Button.setText("OFF")
-                        func_power.button_click(self, 2, self.heater2Button)
+                # # turn on heater if needed:
+                # if self.heater1Checkbox.isEnabled():
+                #     if self.heater1Checkbox.isChecked():
+                #         self.heater1Button.setText("OFF")
+                #         func_power.button_click(self, 1, self.heater1Button)
+                #
+                # if self.heater2Checkbox.isEnabled():
+                #     if self.heater2Checkbox.isChecked():
+                #         self.heater2Button.setText("OFF")
+                #         func_power.button_click(self, 2, self.heater2Button)
 
             else:
                 set_MFC2_flow(self)
@@ -738,7 +738,7 @@ def auto_flow(self):
             # avoid the spike, set to full flow rate after loss < 750
             if loss == 0:
                 self.tab1ExperimentHint.setText(" ! Error: no loss value.\n")
-            elif loss < 900:
+            elif loss < 850:
                 set_MFC2_flow(self)
                 self.auto_tag1 = 0
                 self.auto_tag2 = 1
@@ -784,7 +784,7 @@ def auto_flow(self):
                 save_parameter_R_time(self)
                 print('5 min x %s' % self.len_baseline)
 
-                if self.len_baseline == 15:  # 30 min baseline: auto flow timer is 5 min x6
+                if self.len_baseline == 10:  # 30 min baseline: auto flow timer is 5 min x6
                     end_exp(self)
 
     except:
@@ -832,10 +832,13 @@ def end_exp(self):
         if self.heater1Checkbox.isEnabled() and self.heater1Checkbox.isChecked():
             self.heater1Button.setText("ON")
             func_power.button_click(self, 1, self.heater1Button)
+            print("heater 1 is turned off.")
 
         if self.heater2Checkbox.isEnabled() and self.heater2Checkbox.isChecked():
             self.heater2Button.setText("ON")
             func_power.button_click(self, 2, self.heater2Button)
+            print("heater 2 is turned off.")
+
 
     else:
         self.dropletRadioButton.setEnabled(True)
