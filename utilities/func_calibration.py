@@ -207,7 +207,6 @@ def calculate(self):
                 if self.aqCheckbox.isChecked():  # aqueous solution
                     print("aqueous droplet")
 
-
                     result = droplet_aq.aqueous_droplet(
                         self.experiment_path,
                         self.sample,
@@ -217,8 +216,8 @@ def calculate(self):
                         t1,
                         t2,
                         t3,
-                        pct=sigma,
                         row=row,
+                        pct=sigma,
                         savefig=savefigure,
                     )
 
@@ -233,8 +232,8 @@ def calculate(self):
                         t1,
                         t2,
                         t3,
-                        pct=sigma,
                         row=row,
+                        pct=sigma,
                         savefig=savefigure,
                     )
                     # plt.waitforbuttonpress()  # any key to close all figure
