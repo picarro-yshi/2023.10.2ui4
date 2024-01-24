@@ -784,7 +784,7 @@ def auto_flow(self):
                 save_parameter_R_time(self)
                 print('5 min x %s' % self.len_baseline)
 
-                if self.len_baseline == 10:  # 30 min baseline: auto flow timer is 5 min x6
+                if self.len_baseline == 12:  # 30 min baseline: auto flow timer is 5 min x6
                     end_exp(self)
 
     except:

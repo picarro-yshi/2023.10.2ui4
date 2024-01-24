@@ -167,7 +167,7 @@ def calculation_check(self):
 
 
 def calculate(self):
-    tag, t1, t2, t3 = calculation_check(self)
+    tag, t1, t2, t3 = calculation_check(self)  # t1 format: 202312110941
 
     if tag:
         if self.dropletRadioButton.isChecked():
