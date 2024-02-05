@@ -46,9 +46,9 @@ def move(self):
         # x = "/mnt/r/crd_G9000/AVXxx/3610-NUV1022/R&D/Calibration/12100 - 3-Ethyltoluene/20240102t"
         # y = "2024-01-02_17:34"  # start time
         # z = "2024-01-03_09:41"  # end time
-        path = self.experiment_path.split("/")
-        x = os.path.join("/mnt/r/crd_G9000/AVXxx/3610-NUV1022/R&D/Calibration", path[-2], path[-1])
-        # print(x)
+        start_day = self.expStartLineEdit.text()
+        suffix = self.expSuffix.text()
+        x = "/mnt/r/crd_G9000/AVXxx/3610-NUV1022/R&D/Calibration/" + self.sample +"/" + start_day + suffix
         y, z = extract_time(self.experiment_path)
         if y is None or z is None:
             self.tab1CalHintLabel.setText("! Error move&unzip, cannot extract start/end time.")

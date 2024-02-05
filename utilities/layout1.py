@@ -328,13 +328,13 @@ def createTab1ExperimentLayout(self):
     self.tab1ExperimentHint = QLabel("  ")
     self.tab1ExperimentHint.setStyleSheet(style.grey1())
 
-    self.tab1ExperimentLayout.addLayout(layout1, 10)
-    # self.tab1ExperimentLayout.addStretch()
-    self.tab1ExperimentLayout.addLayout(self.MFCLayout, 20)
-    # self.tab1ExperimentLayout.addStretch()
-    self.tab1ExperimentLayout.addLayout(self.timeLayout, 40)
-    # self.tab1ExperimentLayout.addStretch()
-    self.tab1ExperimentLayout.addWidget(self.tab1ExperimentHint, 10)
+    self.tab1ExperimentLayout.addLayout(layout1)
+    self.tab1ExperimentLayout.addStretch()
+    self.tab1ExperimentLayout.addLayout(self.MFCLayout)
+    self.tab1ExperimentLayout.addStretch()
+    self.tab1ExperimentLayout.addLayout(self.timeLayout)
+    self.tab1ExperimentLayout.addStretch()
+    self.tab1ExperimentLayout.addWidget(self.tab1ExperimentHint)
 
     # droplet or tank
     self.dropletRadioButton = QRadioButton("Droplet Test", self)
