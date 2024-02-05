@@ -38,7 +38,6 @@ def load_experiment(self):
             # load parameters
             f = open(os.path.join(fnrp, "t1.txt"), "r")
             temp = f.read().splitlines()
-            print(temp)
             self.expStartCombobox1.setCurrentText(temp[1])
             self.expStartCombobox2.setCurrentText(temp[2])
 
@@ -66,6 +65,8 @@ def load_experiment(self):
             self.row2LineEdit.setText("")
             self.comboRange1LineEdit.setText("")
             self.comboRange2LineEdit.setText("")
+            self.tab1CalHintLabel.setText("")
+            self.tab1ExperimentHint.setText("")
 
             try:
                 f = open(os.path.join(fnrp, "row.txt"), "r")
@@ -106,13 +107,13 @@ def load_experiment(self):
 
             self.tab1CalculateButton.setEnabled(True)
             self.PlotOneComboButton.setEnabled(True)
+            self.button_move.setEnabled(True)
             self.tab1CalHintLabel.setText("• Experiment parameters loaded.")
         except:
             self.tab1CalHintLabel.setText(" ! Error loading experiment parameters.")
 
 
 def calculation_check(self):
-    self.tab1CalHintLabel.setText(" ")
     # fnzip1 = os.path.join(fnr, 'RDFs')  #RDF is not needed
     fnzip2 = os.path.join(self.experiment_path, "PrivateData")
     fnzip3 = os.path.join(self.experiment_path, "ComboResults")
@@ -182,7 +183,7 @@ def calculate(self):
 
             if note:
                 tag = 0
-                self.tab1CalHintLabel.setText(note + '\nPleas delete the first 2-min data and try again.')
+                self.tab1CalHintLabel.setText(note)
 
     if tag:
         try:
@@ -278,7 +279,7 @@ def calculate(self):
                 os.path.join(self.experiment_path, "par", "calibration_factor.txt"), "r"
             )
             cal = round(float(f.read()), 4)
-            self.tab1CalHintLabel.setText("• Calibration factor is %s" % cal)
+            self.tab1ExperimentHint.setText("• Calibration factor is %s" % cal)
             self.tab1ClosePlotButton.setEnabled(True)
         except:
             self.tab1CalHintLabel.setText(
@@ -303,12 +304,13 @@ def plot_one_combo(self):
     except:
         row = None
 
-    combokey = self.combo_spectrum_key.currentText()
+    # combokey = self.combo_spectrum_key.currentText()
+    combokey = "partial_fit"
     note = combo_other.plot_combo(self.experiment_path, self.sample, combokey, row)
     if note:
-        self.tab1ComboHintLabel.setText(" ! Error: " + note)
+        self.tab1CalHintLabel.setText(" ! Error: " + note)
     else:
-        self.tab1ComboHintLabel.setText("• Combo data plotted.")
+        self.tab1CalHintLabel.setText("• Combo data plotted.")
 
 
 
@@ -371,9 +373,9 @@ def combo_study(self):
     )
 
     if note:
-        self.tab1ComboHintLabel.setText(" ! Error: " + note)
+        self.tab1CalHintLabel.setText(" ! Error: " + note)
     else:
-        self.tab1ComboHintLabel.setText("• Combo data plotted.")
+        self.tab1CalHintLabel.setText("• Combo data plotted.")
     # self.stopPlotComboButton.setEnabled(False)
 
 

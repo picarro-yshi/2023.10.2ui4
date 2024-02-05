@@ -27,7 +27,7 @@ from utilities import (
     func_mfc,
     func_scale,
     func_experiment,
-    func_calibration,
+    func_calibration, func_move,
 )
 
 MINUTE = [str(i).zfill(2) for i in range(60)]
@@ -99,13 +99,17 @@ def tab1_layout(self):
     createTab1ScaleLayout(self)
     createTab1SampleLayout(self)
     createTab1ExperimentLayout(self)
-    createTab1CalibrationLayout(self)
+
+    self.calibrationLayoutTop = QVBoxLayout()
+    self.calibrationLayoutBtm = QVBoxLayout()
+    self.tab1CalibrationLayout.addLayout(self.calibrationLayoutTop)
+    self.tab1CalibrationLayout.addLayout(self.calibrationLayoutBtm)
+    createCalibrationLayoutTop(self)
+    createCalibrationLayoutBtm(self)
 
     # self.bg1 = QButtonGroup()
     # self.bg1.addButton(self.dropletRadioButton)
     # self.bg1.addButton(self.tankRadioButton)
-
-
 
 
 def createTab1LogoLayout(self):
@@ -161,7 +165,6 @@ def createTab1LogoLayout(self):
         "Send MFC data to the analyzer\nso it will show up in the\n"
         "'Data Key' of the analyzer GUI\nSelect MFC2 before click it."
     )
-    # self.sendMFCButton.clicked.connect(self.send_MFC_data)  # if function in the same file
     self.sendMFCButton.clicked.connect(lambda: func_mfc.send_MFC_data(self))
     label2 = QLabel("Send MFC")
 
@@ -322,23 +325,23 @@ def createTab1ExperimentLayout(self):
     layout1 = QHBoxLayout()  # droplet or gas
     self.MFCLayout = QVBoxLayout()  # MFC
     self.timeLayout = QHBoxLayout()  # time
-    self.tab1ExperimentHint = QLabel(" \n ")
+    self.tab1ExperimentHint = QLabel("  ")
     self.tab1ExperimentHint.setStyleSheet(style.grey1())
 
-    self.tab1ExperimentLayout.addLayout(layout1)
-    self.tab1ExperimentLayout.addStretch()
-    self.tab1ExperimentLayout.addLayout(self.MFCLayout)
-    self.tab1ExperimentLayout.addStretch()
-    self.tab1ExperimentLayout.addLayout(self.timeLayout)
-    self.tab1ExperimentLayout.addStretch()
-    self.tab1ExperimentLayout.addWidget(self.tab1ExperimentHint)
+    self.tab1ExperimentLayout.addLayout(layout1, 10)
+    # self.tab1ExperimentLayout.addStretch()
+    self.tab1ExperimentLayout.addLayout(self.MFCLayout, 20)
+    # self.tab1ExperimentLayout.addStretch()
+    self.tab1ExperimentLayout.addLayout(self.timeLayout, 40)
+    # self.tab1ExperimentLayout.addStretch()
+    self.tab1ExperimentLayout.addWidget(self.tab1ExperimentHint, 10)
 
     # droplet or tank
     self.dropletRadioButton = QRadioButton("Droplet Test", self)
     self.tankRadioButton = QRadioButton("Gas Tank Test", self)
     self.dropletRadioButton.setChecked(
         True
-    )  ## follow immediately after all radiobutton, otherwise python crash
+    )  # follow immediately after all radiobutton, otherwise python crash
     self.dropletRadioButton.setStyleSheet("color: red")
     self.tankRadioButton.setStyleSheet("color: black")
 
@@ -543,7 +546,7 @@ def createTab1TimeLayout(self):
     layout1.addWidget(self.expStartLineEdit)
     layout1.addWidget(self.expStartCombobox1)
     layout1.addWidget(self.expStartCombobox2)
-    layout1.addStretch()
+    # layout1.addStretch()
 
     # box 2
     self.mfcStopButton = QToolButton()
@@ -587,7 +590,7 @@ def createTab1TimeLayout(self):
     layout3.addWidget(self.expAddLineEdit)
     layout3.addWidget(self.expAddCombobox1)
     layout3.addWidget(self.expAddCombobox2)
-    layout3.addStretch()
+    # layout3.addStretch()
 
     # box4
     self.expEndButton = QToolButton()
@@ -616,32 +619,29 @@ def createTab1TimeLayout(self):
     layout4.addWidget(self.expEndLineEdit)
     layout4.addWidget(self.expEndCombobox1)
     layout4.addWidget(self.expEndCombobox2)
-    layout4.addStretch()
+    # layout4.addStretch()
 
 
-def createTab1CalibrationLayout(self):
-    layoutTop = QVBoxLayout()
-    layoutBtm = QVBoxLayout()
-    self.tab1CalibrationLayout.addLayout(layoutTop)
-    self.tab1CalibrationLayout.addLayout(layoutBtm)
-
-    # step 1: calibration factor
+# step 1: calibration factor
+def createCalibrationLayoutTop(self):
     layout1 = QHBoxLayout()
     layout2 = QHBoxLayout()
     layout3 = QHBoxLayout()
+    layout4 = QHBoxLayout()
     layout_calbutton = QHBoxLayout()
-    self.tab1CalHintLabel = QLabel(" ")
-    self.tab1CalHintLabel.setStyleSheet(style.grey1())
-    self.tab1CalHintLabel.setTextInteractionFlags(
-        Qt.TextInteractionFlag.TextSelectableByMouse
-    )
+    # self.tab1CalHintLabel = QLabel(" ")
+    # self.tab1CalHintLabel.setStyleSheet(style.grey1())
+    # self.tab1CalHintLabel.setTextInteractionFlags(
+    #     Qt.TextInteractionFlag.TextSelectableByMouse
+    # )
 
-    layoutTop.addLayout(layout1)
-    layoutTop.addLayout(layout2)
-    layoutTop.addLayout(layout3)
-    layoutTop.addLayout(layout_calbutton)
-    layoutTop.addWidget(self.tab1CalHintLabel)
+    self.calibrationLayoutTop.addLayout(layout1)
+    self.calibrationLayoutTop.addLayout(layout2)
+    self.calibrationLayoutTop.addLayout(layout3)
+    self.calibrationLayoutTop.addLayout(layout4)
+    self.calibrationLayoutTop.addLayout(layout_calbutton)
 
+    # title
     label1 = QLabel(" Step 1: Calibration Factor")
     label1.setStyleSheet(style.body1())
     self.saveFigCheckbox = QCheckBox("Save Figure")
@@ -650,11 +650,37 @@ def createTab1CalibrationLayout(self):
     layout1.addStretch()
     layout1.addWidget(self.saveFigCheckbox)
 
-    label2 = QLabel("Combo Spectrum Keys:")
-    self.combo_spectrum_key = QComboBox()
-    self.combo_spectrum_key.addItems(COMBOKEYS)
-    layout2.addWidget(label2)
-    layout2.addWidget(self.combo_spectrum_key)
+    # move and unzip ssh
+    self.rdfCheckbox = QCheckBox("RDF")
+    self.privateCheckbox = QCheckBox("Private")
+    self.comboCheckbox = QCheckBox("Combo")
+    self.broadbandCheckbox = QCheckBox("broadband")
+    self.broadbandCheckbox.setToolTip("Combo Log broadband h5 files")
+
+    self.rdfCheckbox.setChecked(True)
+    self.privateCheckbox.setChecked(True)
+    self.comboCheckbox.setChecked(True)
+    self.broadbandCheckbox.setChecked(False)
+
+    layout2.addWidget(self.rdfCheckbox)
+    layout2.addWidget(self.privateCheckbox)
+    layout2.addWidget(self.comboCheckbox)
+    layout2.addWidget(self.broadbandCheckbox)
+
+    label_move = QLabel("From analyzer to R drive: ")
+    self.button_move = QPushButton("Move && Unzip Data", self)
+    self.button_move.setStyleSheet("font: bold")
+    self.button_move.setToolTip("For current compound, between Start and End time")
+    self.button_move.clicked.connect(lambda: func_move.move(self))
+    self.button_move.setEnabled(False)
+    layout3.addWidget(label_move)
+    layout3.addWidget(self.button_move)
+
+    # label2 = QLabel("Combo Spectrum Keys:")
+    # self.combo_spectrum_key = QComboBox()
+    # self.combo_spectrum_key.addItems(COMBOKEYS)
+    # layout2.addWidget(label2)
+    # layout2.addWidget(self.combo_spectrum_key)
 
     label3 = QLabel("Combo Log Row #:")
     self.oneComboNumLineEdit = QLineEdit()
@@ -663,13 +689,13 @@ def createTab1CalibrationLayout(self):
         "Optional, default to 500.\ninteger between 0 and Maximal."
     )
     label4 = QLabel("Maximal: ")
-    self.maxRowLabel = QLabel("     ")
+    self.maxRowLabel = QLabel("            ")
 
-    layout3.addWidget(label3)
-    layout3.addWidget(self.oneComboNumLineEdit)
-    layout3.addStretch()
-    layout3.addWidget(label4)
-    layout3.addWidget(self.maxRowLabel)
+    layout4.addWidget(label3)
+    layout4.addWidget(self.oneComboNumLineEdit)
+    layout4.addStretch()
+    layout4.addWidget(label4)
+    layout4.addWidget(self.maxRowLabel)
 
     # 4 round buttons
     layout11 = QVBoxLayout()
@@ -734,33 +760,36 @@ def createTab1CalibrationLayout(self):
     layout14.addWidget(self.tab1ClosePlotButton)
     layout14.addWidget(label14)
 
-    # step 2: calibration
-    layout4 = QHBoxLayout()
+
+# step 2: calibration
+def createCalibrationLayoutBtm(self):
+    layout = QHBoxLayout()
     grid = QGridLayout()
-    self.tab1ComboHintLabel = QLabel("  ")
-    self.tab1ComboHintLabel.setStyleSheet(style.grey1())
-    self.tab1ComboHintLabel.setTextInteractionFlags(
+    # self.tab1ComboHintLabel = QLabel("  ")
+    self.tab1CalHintLabel = QLabel("  ")
+    self.tab1CalHintLabel.setStyleSheet(style.grey1())
+    self.tab1CalHintLabel.setTextInteractionFlags(
         Qt.TextInteractionFlag.TextSelectableByMouse
     )
 
-    layoutBtm.addLayout(layout4)
-    layoutBtm.addLayout(grid)
-    layoutBtm.addWidget(self.tab1ComboHintLabel)
+    self.calibrationLayoutBtm.addLayout(layout)
+    self.calibrationLayoutBtm.addLayout(grid)
+    self.calibrationLayoutBtm.addWidget(self.tab1CalHintLabel)
 
-    layout5 = QVBoxLayout()
-    layout6 = QVBoxLayout()
-    layout4.addLayout(layout5)
-    layout4.addStretch()
-    layout4.addLayout(layout6)
+    layout1 = QVBoxLayout()
+    layout2 = QVBoxLayout()
+    layout.addLayout(layout1)
+    layout.addStretch()
+    layout.addLayout(layout2)
 
     label_step2_1 = QLabel(" Step 2: Combo Log Study")
     label_step2_1.setStyleSheet(style.body1())
     label_step2_2 = QLabel("Plot data at two time points:")
     self.rowNumRadioButton = QRadioButton("Use Row Numbers: ", self)
 
-    layout5.addWidget(label_step2_1)
-    layout5.addWidget(label_step2_2)
-    layout5.addWidget(self.rowNumRadioButton)
+    layout1.addWidget(label_step2_1)
+    layout1.addWidget(label_step2_2)
+    layout1.addWidget(self.rowNumRadioButton)
 
     self.plotComboButton = QPushButton("  Plot  ", self)
     self.plotComboButton.clicked.connect(lambda: func_calibration.combo_study(self))
@@ -774,8 +803,8 @@ def createTab1CalibrationLayout(self):
         "To stop combo plot, change the value of 'par1/combo_stop.txt' to 1."
     )
 
-    layout6.addWidget(self.plotComboButton)
-    layout6.addWidget(self.stopPlotComboButton)
+    layout2.addWidget(self.plotComboButton)
+    layout2.addWidget(self.stopPlotComboButton)
 
     gap = QLabel()
     label_step2_row1 = QLabel("Row 1")
