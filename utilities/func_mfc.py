@@ -24,7 +24,7 @@ def set_mfc_1slpm(self, x=None):
             adr1 = self.MFC1AddressLineEdit.text()
             flow_controller1 = FlowController(port=port_mfc, address=adr1)
             flow_controller1.set_flow_rate(flow=F1)
-            self.mfcHintLabel.setText("• MFC1 set to %.4f" % F1)
+            self.mfcHintLabel.setText("• MFC1 set to %.2f" % F1)
     except:
         self.mfcHintLabel.setText("! Error set MFC1.")
 
@@ -48,7 +48,7 @@ def set_mfc_100sccm(self, x=None):
             flow_controller1.set_flow_rate(flow=F1)
             flow_controller2.set_flow_rate(flow=F2)
             self.tab1MFC1LineEdit.setText(str(F1))
-            self.mfcHintLabel.setText("• MFC2 set to %.4f" % F2)
+            self.mfcHintLabel.setText("• MFC2 set to %.2f" % F2)
     except:
         self.mfcHintLabel.setText("! Error set MFC2.")
 
@@ -72,7 +72,7 @@ def set_mfc_10sccm(self, x=None):
             flow_controller1.set_flow_rate(flow=F1)
             flow_controller2.set_flow_rate(flow=F2)
             self.tab1MFC1LineEdit.setText(str(F1))
-            self.mfcHintLabel.setText("• MFC2 set to %.4f" % F2)
+            self.mfcHintLabel.setText("• MFC2 set to %.2f" % F2)
     except:
         self.mfcHintLabel.setText("! Error set MFC2.")
 
