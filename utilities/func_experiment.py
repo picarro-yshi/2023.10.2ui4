@@ -755,7 +755,7 @@ def auto_flow(self):
         if self.auto_tag2:
             # print('concentration: ', self.y[-1])
             zero2, _ = calculate_zero_sigma(self)
-            if zero2 < 9e-7:
+            if zero2 < 5e-6:
                 if self.mfc100RadioButton.isChecked():
                     func_mfc.set_mfc_100sccm(self, 100)
                 else:
@@ -784,7 +784,7 @@ def auto_flow(self):
                 save_parameter_R_time(self)
                 print('5 min x %s' % self.len_baseline)
 
-                if self.len_baseline == 12:  # 30 min baseline: auto flow timer is 5 min x6
+                if self.len_baseline == 8:  # 30 min baseline: auto flow timer is 5 min x6
                     end_exp(self)
 
     except:
@@ -823,19 +823,19 @@ def end_exp(self):
     # Enable, disable
     self.expEndButton.setEnabled(False)
     self.tab1CreateExpButton.setEnabled(True)
+    self.automationCheckbox.setDisabled(False)
+
     if self.dropletRadioButton.isChecked():
         self.tankRadioButton.setEnabled(True)
         # reduce bubble line
         set_MFC2_flow(self)
 
         # shut down heater if needed
-        if self.heater1Checkbox.isEnabled() and self.heater1Checkbox.isChecked():
-            self.heater1Button.setText("ON")
+        if self.heater1Button.isEnabled() and self.heater1Button.text() == 'ON':
             func_power.button_click(self, 1, self.heater1Button)
             print("heater 1 is turned off.")
 
-        if self.heater2Checkbox.isEnabled() and self.heater2Checkbox.isChecked():
-            self.heater2Button.setText("ON")
+        if self.heater2Button.isEnabled() and self.heater2Button.text() == 'ON':
             func_power.button_click(self, 2, self.heater2Button)
             print("heater 2 is turned off.")
 

@@ -75,10 +75,9 @@ def power_connect(self):
 # API of power switch
 def button_click(self, id, button):
     ip_switch = self.powerSwitchIPAddressLineEdit.text()
-    state = button.text()
 
     try:
-        if state == 'ON':
+        if button.text() == 'ON':
             url = "http://%s/api/control?target=outlet%s&action=%s" % (ip_switch, str(id),"off")
             response = urllib.request.urlopen(url, timeout=5).read().decode('utf-8')
             set_button(button, False)

@@ -791,10 +791,10 @@ def createCalibrationLayoutBtm(self):
     layout1.addWidget(label_step2_2)
     layout1.addWidget(self.rowNumRadioButton)
 
-    self.plotComboButton = QPushButton("  Plot  ", self)
+    self.plotComboButton = QPushButton(" Plot Whole ", self)
     self.plotComboButton.clicked.connect(lambda: func_calibration.combo_study(self))
     self.plotComboButton.setStyleSheet("font: bold")
-    self.stopPlotComboButton = QPushButton("Stop Plot", self)
+    self.stopPlotComboButton = QPushButton("Stop Plot Whole", self)
     self.stopPlotComboButton.clicked.connect(
         lambda: func_calibration.stop_combo_plot(self)
     )

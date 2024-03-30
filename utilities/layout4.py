@@ -338,7 +338,7 @@ def query_combine(self):
 
 # whole database
 def query_all(self):
-    query = "SELECT * FROM chemicals"
+    query = "SELECT * FROM chemicals ORDER BY CID ASC"
     displayQ(self, query, self.allCountLabel)
 
 # to-do list
