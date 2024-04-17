@@ -5,7 +5,7 @@ import paramiko
 username = "picarro"
 password = "310595054"
 
-def extract_time(dstfolder):
+def extract_time1(dstfolder):  # based on par/txt files
     try:
         f = open(os.path.join(dstfolder, 'par', 't1.txt'), 'r')
         temp = f.read().splitlines()
@@ -22,6 +22,51 @@ def extract_time(dstfolder):
         start = '%s-%s-%s_%s:%s' % (ta1[:4], ta1[4:6], ta1[6:8], ta2, ta3)
         end = '%s-%s-%s_%s:%s' % (tc1[:4], tc1[4:6], tc1[6:8], tc2, tc3)
         print(start, end)
+    except:
+        # print("error extract start/end time.")
+        start = None
+        end = None
+    return start, end
+
+def extract_time(self, dstfolder):  # based on GUI
+    try:
+        # get value from par folder
+        par1 = os.path.join(dstfolder, 'par', 't1.txt')
+        with open(par1, 'r') as f:
+            temp = f.read().splitlines()
+        ta1 = temp[0]  # 20230725
+        ta2 = temp[1]  # 17
+        ta3 = temp[2]  # 14
+
+        par3 = os.path.join(dstfolder, 'par', 't3.txt')
+        with open(par3, 'r') as f:
+            temp = f.read().splitlines()
+        tc1 = temp[0]
+        tc2 = temp[1]
+        tc3 = temp[2]
+
+        start0 = '%s-%s-%s_%s:%s' % (ta1[:4], ta1[4:6], ta1[6:8], ta2, ta3)
+        end0 = '%s-%s-%s_%s:%s' % (tc1[:4], tc1[4:6], tc1[6:8], tc2, tc3)
+
+        # get GUI inputs
+        ta1 = self.expStartLineEdit.text()
+        ta2 = self.expStartCombobox1.currentText()
+        ta3 = self.expStartCombobox2.currentText()
+        start = '%s-%s-%s_%s:%s' % (ta1[:4], ta1[4:6], ta1[6:8], ta2, ta3)
+
+        tc1 = self.expEndLineEdit.text()
+        tc2 = self.expEndCombobox1.currentText()
+        tc3 = self.expEndCombobox2.currentText()
+        end = '%s-%s-%s_%s:%s' % (tc1[:4], tc1[4:6], tc1[6:8], tc2, tc3)
+        print(start, end)
+
+        if start != start0:
+            with open(par1, "w") as f:
+                f.write("%s\n%s\n%s" % (ta1, ta2, ta3))
+
+        if end != end0:
+            with open(par3, "w") as f:
+                f.write("%s\n%s\n%s" % (tc1, tc2, tc3))
     except:
         # print("error extract start/end time.")
         start = None
@@ -49,7 +94,7 @@ def move(self):
         start_day = self.expStartLineEdit.text()
         suffix = self.expSuffix.text()
         x = "/mnt/r/crd_G9000/AVXxx/3610-NUV1022/R&D/Calibration/" + self.sample +"/" + start_day + suffix
-        y, z = extract_time(self.experiment_path)
+        y, z = extract_time(self, self.experiment_path)
         if y is None or z is None:
             self.tab1CalHintLabel.setText("! Error move&unzip, cannot extract start/end time.")
             tag = 0
