@@ -5,6 +5,7 @@ import os
 
 from alicat import FlowController
 import CmdFIFO_py3 as CmdFIFO
+RPC_PORT_DRIVER = 50010
 
 datakey1 = "MFC1_flow"
 datakey2 = "MFC2_flow"
@@ -41,7 +42,7 @@ def set_mfc_100sccm(self, x=None):
         else:
             port_mfc = self.mfcPortCombobox.currentText()
             adr1 = self.MFC1AddressLineEdit.text()
-            adr2 = self.MFC2largeAddressLineEdit.text()
+            adr2 = self.MFC2LargeAddressLineEdit.text()
             F1 = 1 - F2 / 1000  # dilution
             flow_controller1 = FlowController(port=port_mfc, address=adr1)
             flow_controller2 = FlowController(port=port_mfc, address=adr2)
@@ -65,7 +66,7 @@ def set_mfc_10sccm(self, x=None):
         else:
             port_mfc = self.mfcPortCombobox.currentText()
             adr1 = self.MFC1AddressLineEdit.text()
-            adr2 = self.MFC2smallAddressLineEdit.text()
+            adr2 = self.MFC2SmallAddressLineEdit.text()
             F1 = 1 - F2 / 1000  # dilution line
             flow_controller1 = FlowController(port=port_mfc, address=adr1)
             flow_controller2 = FlowController(port=port_mfc, address=adr2)
@@ -86,6 +87,13 @@ def choose_100sccm(self):
     self.tab1MFC10Combobox.setStyleSheet("color: grey")
     self.tab1MFC10Button.setStyleSheet("color: grey")
 
+    # switch valve
+    Driver = CmdFIFO.CmdFIFOServerProxy("http://%s:%d" % (self.analyzer_ip, RPC_PORT_DRIVER), "Automation",
+                                        IsDontCareConnection=False)
+    Driver.setValveMask(0)
+    valveState = Driver.getValveMask()
+    print('Valve State =', int(valveState))
+
 
 def choose_10sccm(self):
     self.mfc100RadioButton.setStyleSheet("color: grey")
@@ -96,13 +104,20 @@ def choose_10sccm(self):
     self.tab1MFC10Combobox.setStyleSheet("color: black")
     self.tab1MFC10Button.setStyleSheet("color: black")
 
+    # switch valve
+    Driver = CmdFIFO.CmdFIFOServerProxy("http://%s:%d" % (self.analyzer_ip, RPC_PORT_DRIVER), "Automation",
+                                        IsDontCareConnection=False)
+    Driver.setValveMask(1)
+    valveState = Driver.getValveMask()
+    print('Valve State =', int(valveState))
+
 
 def stop_mfc2_flow(self):  # stop MFC2, set MFC1 to maximum
     try:
         port_mfc = self.mfcPortCombobox.currentText()
         adr1 = self.MFC1AddressLineEdit.text()
-        adr2large = self.MFC2largeAddressLineEdit.text()
-        adr2small = self.MFC2smallAddressLineEdit.text()
+        adr2large = self.MFC2LargeAddressLineEdit.text()
+        adr2small = self.MFC2SmallAddressLineEdit.text()
 
         flow_controller1 = FlowController(port=port_mfc, address=adr1)
         flow_controller2large = FlowController(port=port_mfc, address=adr2large)
@@ -120,18 +135,17 @@ def send_MFC_data(self):
     try:
         port_mfc = self.mfcPortCombobox.currentText()
         mfc_address1 = self.MFC1AddressLineEdit.text()
+        self.flow_controller1 = FlowController(port=port_mfc, address=mfc_address1)
+
+        mfc_address2 = self.MFC2LargeAddressLineEdit.text()
+        self.flow_controller2_large = FlowController(port=port_mfc, address=mfc_address2)
+        mfc_address2 = self.MFC2SmallAddressLineEdit.text()
+        self.flow_controller2_small = FlowController(port=port_mfc, address=mfc_address2)
 
         if self.mfc100RadioButton.isChecked():
-            mfc_address2 = self.MFC2largeAddressLineEdit.text()
-            self.mfc2_refresh_label = self.tab1MFC100Label
-            self.tab1MFC10Label.setText("")  # need to put ""
+            self.use_large = 1
         else:
-            mfc_address2 = self.MFC2smallAddressLineEdit.text()
-            self.mfc2_refresh_label = self.tab1MFC10Label
-            self.tab1MFC100Label.setText("")
-
-        self.flow_controller1 = FlowController(port=port_mfc, address=mfc_address1)
-        self.flow_controller2 = FlowController(port=port_mfc, address=mfc_address2)
+            self.use_large = 0
 
         host = self.analyzerIPLineEdit.text()
         self.analyzer_ip = "http://" + host
@@ -148,7 +162,8 @@ def send_MFC_data(self):
 def sendMFC(self):  # send data to analyzer
     try:
         fc1 = self.flow_controller1.get()
-        fc2 = self.flow_controller2.get()
+        fc2_large = self.flow_controller2_large.get()
+        fc2_small = self.flow_controller2_small.get()
 
         # print(fc1.get()['pressure'])
         # print(fc1.get()['temperature'])
@@ -165,6 +180,11 @@ def sendMFC(self):  # send data to analyzer
         # print(MeasSystem.GetStates())
 
         a = fc1["mass_flow"]
+        if self.use_large:
+            fc2 = fc2_large
+        else:
+            fc2 = fc2_small
+
         b = fc2["mass_flow"]
         c = fc2["pressure"]
         d = fc2["temperature"]
@@ -181,7 +201,8 @@ def sendMFC(self):  # send data to analyzer
     # refresh
     try:
         self.tab1MFC1Label.setText(str(a))
-        self.mfc2_refresh_label.setText(str(b))
+        self.tab1MFC100Label.setText(str(fc2_large["mass_flow"]))
+        self.tab1MFC10Label.setText(str(fc2_small["mass_flow"]))
         self.tab1PressureLabel.setText(str(c))
         self.tab1TempLabel.setText(str(d))
     except:
@@ -223,7 +244,7 @@ def detect_mfc1(self):
 
 
 def detect_mfc2large(self):
-    adr = self.MFC2largeAddressLineEdit.text()
+    adr = self.MFC2LargeAddressLineEdit.text()
     tag = detect_mfc(self, adr)
     if tag:
         self.alicatMFC2LargeHintLabel.setText("\u2713")
@@ -237,7 +258,7 @@ def detect_mfc2large(self):
 
 
 def detect_mfc2small(self):
-    adr = self.MFC2smallAddressLineEdit.text()
+    adr = self.MFC2SmallAddressLineEdit.text()
     tag = detect_mfc(self, adr)
     if tag:
         self.alicatMFC2SmallHintLabel.setText("\u2713")

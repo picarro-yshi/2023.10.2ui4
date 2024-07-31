@@ -552,7 +552,7 @@ def createTab1TimeLayout(self):
     self.mfcStopButton = QToolButton()
     self.mfcStopButton.setIcon(QIcon("icons/zero.png"))
     self.mfcStopButton.setIconSize(QSize(40, 40))
-    self.mfcStopButton.setToolTip("Stop MFC2 (bubble line) flow,\nset MFC1 (dilution line) to 1 SLPM.")
+    self.mfcStopButton.setToolTip("Stop all two MFC2 (bubble line) flows,\nset MFC1 (dilution line) to 1 SLPM.")
     self.mfcStopButton.clicked.connect(lambda: func_mfc.stop_mfc2_flow(self))
     label2 = QLabel("Stop MFC2 Flow")
     label2.setAlignment(Qt.AlignmentFlag.AlignTop)
