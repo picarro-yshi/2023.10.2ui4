@@ -105,14 +105,14 @@ class Window(QWidget):
     def set_window_layout(self):
         self.mainlayout()
         self.tab3_layout()  # hardware needed
+        # load parameters
+        load_par.get_port(self)
         load_par.load_tab3(self)
 
         layout1.tab1_layout(self)
-        self.tab2_layout()
-
-        # load parameters
         load_par.load_tab1(self)
-        load_par.get_port(self)
+        
+        self.tab2_layout()
         layout4.tab4_layout(self)  # sql table
         self.tab5_layout()
 
@@ -350,14 +350,14 @@ class Window(QWidget):
         self.alicatMFC1HintLabel = QLabel()
 
         label_mfc5 = QLabel("MFC2 (large) Address: ")
-        self.MFC2largeAddressLineEdit = QLineEdit()
+        self.MFC2LargeAddressLineEdit = QLineEdit()
         mfc2largeButton = QPushButton("Detect")
         mfc2largeButton.clicked.connect(lambda: func_mfc.detect_mfc2large(self))
         label_mfc6 = QLabel("Bubble line, 100 sccm")
         self.alicatMFC2LargeHintLabel = QLabel()
 
         label_mfc7 = QLabel("MFC2 (small) Address: ")
-        self.MFC2smallAddressLineEdit = QLineEdit()
+        self.MFC2SmallAddressLineEdit = QLineEdit()
         mfc2smallButton = QPushButton("Detect")
         mfc2smallButton.clicked.connect(lambda: func_mfc.detect_mfc2small(self))
         label_mfc8 = QLabel("Bubble line, 10 sccm")
@@ -374,13 +374,13 @@ class Window(QWidget):
         grid2.addWidget(self.alicatMFC1HintLabel, 2, 4)
 
         grid2.addWidget(label_mfc5, 3, 0)
-        grid2.addWidget(self.MFC2largeAddressLineEdit, 3, 1)
+        grid2.addWidget(self.MFC2LargeAddressLineEdit, 3, 1)
         grid2.addWidget(mfc2largeButton, 3, 2)
         grid2.addWidget(label_mfc6, 3, 3)
         grid2.addWidget(self.alicatMFC2LargeHintLabel, 3, 4)
 
         grid2.addWidget(label_mfc7, 4, 0)
-        grid2.addWidget(self.MFC2smallAddressLineEdit, 4, 1)
+        grid2.addWidget(self.MFC2SmallAddressLineEdit, 4, 1)
         grid2.addWidget(mfc2smallButton, 4, 2)
         grid2.addWidget(label_mfc8, 4, 3)
         grid2.addWidget(self.alicatMFC2SmallHintLabel, 4, 4)

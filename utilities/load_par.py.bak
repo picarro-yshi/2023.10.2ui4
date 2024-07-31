@@ -77,7 +77,7 @@ def load_tab3(self):
 
     with open(os.path.join("par1", "mfc_port.txt"), "r") as f:
         temp = f.read()
-    self.mfcPortCombobox.setCurrentText(temp)
+    self.mfcPortCombobox.setCurrentText(str(temp))
     if temp != self.mfcPortCombobox.currentText():
         print("MFC port name not in record.")
 
