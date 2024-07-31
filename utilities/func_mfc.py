@@ -88,7 +88,7 @@ def choose_100sccm(self):
     self.tab1MFC10Button.setStyleSheet("color: grey")
 
     # switch valve
-    Driver = CmdFIFO.CmdFIFOServerProxy("http://%s:%d" % (self.analyzer_ip, RPC_PORT_DRIVER), "Automation",
+    Driver = CmdFIFO.CmdFIFOServerProxy("http://%s:%d" % (self.host, RPC_PORT_DRIVER), "Automation",
                                         IsDontCareConnection=False)
     Driver.setValveMask(0)
     valveState = Driver.getValveMask()
@@ -105,7 +105,7 @@ def choose_10sccm(self):
     self.tab1MFC10Button.setStyleSheet("color: black")
 
     # switch valve
-    Driver = CmdFIFO.CmdFIFOServerProxy("http://%s:%d" % (self.analyzer_ip, RPC_PORT_DRIVER), "Automation",
+    Driver = CmdFIFO.CmdFIFOServerProxy("http://%s:%d" % (self.host, RPC_PORT_DRIVER), "Automation",
                                         IsDontCareConnection=False)
     Driver.setValveMask(1)
     valveState = Driver.getValveMask()
@@ -147,9 +147,6 @@ def send_MFC_data(self):
         else:
             self.use_large = 0
 
-        host = self.analyzerIPLineEdit.text()
-        self.analyzer_ip = "http://" + host
-
         self.timer_mfc.start()
         self.sendMFCButton.setEnabled(False)
         self.stopSendMFCButton.setEnabled(True)
@@ -173,7 +170,7 @@ def sendMFC(self):  # send data to analyzer
         # MeasSystem = CmdFIFO.CmdFIFOServerProxy("http://localhost:%s" % port_in, "test_connection",
         #                                         IsDontCareConnection=False)
         MeasSystem = CmdFIFO.CmdFIFOServerProxy(
-            f"{self.analyzer_ip}:{self.port_in}",
+            "http://%s:%d" % (self.host, self.port_in),
             "test_connection",
             IsDontCareConnection=False,
         )  # time out has no effect
