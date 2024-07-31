@@ -10,7 +10,6 @@ import StringPickler_py3 as StringPickler
 
 def detect_analyzer_portin(self):
     try:
-        self.host = self.analyzerIPLineEdit.text()
         socket.create_connection(
             (self.host, self.port_in), 5
         )  # '10.100.3.123'   ## 50070
@@ -33,7 +32,6 @@ def detect_analyzer_portout(self):
     interval = 0
 
     try:
-        self.host = self.analyzerIPLineEdit.text()
         socket.create_connection((self.host, self.port_out), 5)
         dm_queue = Queue(180)  ## data manager
         listener = Listener(

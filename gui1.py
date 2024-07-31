@@ -104,9 +104,9 @@ class Window(QWidget):
 
     def set_window_layout(self):
         self.mainlayout()
+        self.tab3_layout()  # hardware needed
         layout1.tab1_layout(self)
         self.tab2_layout()
-        self.tab3_layout()
 
         # load parameters
         load_par.load_tab1(self)
