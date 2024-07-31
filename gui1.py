@@ -105,13 +105,14 @@ class Window(QWidget):
     def set_window_layout(self):
         self.mainlayout()
         self.tab3_layout()  # hardware needed
+        load_par.load_tab3(self)
+
         layout1.tab1_layout(self)
         self.tab2_layout()
 
         # load parameters
         load_par.load_tab1(self)
         load_par.get_port(self)
-        load_par.load_tab3(self)
         layout4.tab4_layout(self)  # sql table
         self.tab5_layout()
 
