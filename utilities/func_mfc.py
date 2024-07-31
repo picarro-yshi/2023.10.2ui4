@@ -88,6 +88,7 @@ def choose_100sccm(self):
     self.tab1MFC10Button.setStyleSheet("color: grey")
 
     # switch valve
+    self.host = self.analyzerIPLineEdit.text()
     Driver = CmdFIFO.CmdFIFOServerProxy("http://%s:%d" % (self.host, RPC_PORT_DRIVER), "Automation",
                                         IsDontCareConnection=False)
     Driver.setValveMask(0)
