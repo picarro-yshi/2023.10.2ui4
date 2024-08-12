@@ -428,7 +428,7 @@ def createTab1MFCLayout(self):
 
     self.tab1MFC100Button = QPushButton("  Set  ", self)
     self.tab1MFC100Button.setStyleSheet("font: bold")
-    self.tab1MFC100Button.clicked.connect(lambda: func_mfc.set_mfc_100sccm(self))
+    self.tab1MFC100Button.clicked.connect(lambda: func_mfc.set_mfc_100sccm(self, 1))
 
     self.tab1MFC10Label = QLabel(" ")
     self.tab1MFC10Label.setStyleSheet(style.grey1())
@@ -443,7 +443,7 @@ def createTab1MFCLayout(self):
     self.tab1MFC10Button.setStyleSheet("font: bold")
     self.tab1MFC10Button.clicked.connect(lambda: func_mfc.set_mfc_10sccm(self))
 
-    func_mfc.choose_100sccm(self)
+    func_mfc.choose_100sccm(self, 0)
 
     grid.addWidget(label1, 0, 0)
     grid.addWidget(self.tab1PressureLabel, 0, 1)

@@ -78,7 +78,16 @@ def set_mfc_10sccm(self, x=None):
         self.mfcHintLabel.setText("! Error set MFC2.")
 
 
-def choose_100sccm(self):
+# switch valve
+def valve(host, n):
+    Driver = CmdFIFO.CmdFIFOServerProxy("http://%s:%d" % (host, RPC_PORT_DRIVER), "Automation",
+                                        IsDontCareConnection=False)
+    Driver.setValveMask(n)  # 0: 100 sccm; 1: 10 sccm
+    valveState = Driver.getValveMask()
+    print('Valve State =', int(valveState))
+
+
+def choose_100sccm(self, switch_valve=1):
     self.mfc100RadioButton.setStyleSheet("color: black")
     self.tab1MFC100Combobox.setStyleSheet("color: black")
     self.tab1MFC100Button.setStyleSheet("color: black")
@@ -87,16 +96,13 @@ def choose_100sccm(self):
     self.tab1MFC10Combobox.setStyleSheet("color: grey")
     self.tab1MFC10Button.setStyleSheet("color: grey")
 
-    # switch valve
     self.host = self.analyzerIPLineEdit.text()
-    Driver = CmdFIFO.CmdFIFOServerProxy("http://%s:%d" % (self.host, RPC_PORT_DRIVER), "Automation",
-                                        IsDontCareConnection=False)
-    Driver.setValveMask(0)
-    valveState = Driver.getValveMask()
-    print('Valve State =', int(valveState))
+    # switch valve
+    if switch_valve:
+        valve(self.host, 0)
 
 
-def choose_10sccm(self):
+def choose_10sccm(self, switch_valve=1):
     self.mfc100RadioButton.setStyleSheet("color: grey")
     self.tab1MFC100Combobox.setStyleSheet("color: grey")
     self.tab1MFC100Button.setStyleSheet("color: grey")
@@ -106,11 +112,8 @@ def choose_10sccm(self):
     self.tab1MFC10Button.setStyleSheet("color: black")
 
     # switch valve
-    Driver = CmdFIFO.CmdFIFOServerProxy("http://%s:%d" % (self.host, RPC_PORT_DRIVER), "Automation",
-                                        IsDontCareConnection=False)
-    Driver.setValveMask(1)
-    valveState = Driver.getValveMask()
-    print('Valve State =', int(valveState))
+    if switch_valve:
+        valve(self.host, 1)
 
 
 def stop_mfc2_flow(self):  # stop MFC2, set MFC1 to maximum

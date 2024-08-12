@@ -115,6 +115,12 @@ def input_check(self):
                 self.tab1ExperimentHint.setText(" ! Error: MFC1 not connected.\n")
             else:
                 if self.mfc100RadioButton.isChecked():
+                    # switch valve
+                    try:
+                        func_mfc.valve(self.host, 0)
+                    except:
+                        print("fail to switch valve to 100 sccm MFC.")
+
                     if not func_mfc.detect_mfc2large(self):
                         self.tab1ExperimentHint.setText(
                             " ! Error: MFC2(100 sccm) not connected.\n"
@@ -122,6 +128,12 @@ def input_check(self):
                     else:
                         tag = 1
                 else:
+                    # switch valve
+                    try:
+                        func_mfc.valve(self.host, 1)
+                    except:
+                        print("fail to switch valve to 10 sccm MFC.")
+
                     if not func_mfc.detect_mfc2small(self):
                         self.tab1ExperimentHint.setText(
                             " ! Error: MFC2(10 sccm) not connected.\n"
