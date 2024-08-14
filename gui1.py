@@ -4,7 +4,7 @@
 # ----- constants -------
 PORT_IN = 50070  ## backdoor, send data to fitter on analyzer
 PORT_OUT = 40060  ## listener, get data from analyzer
-ANALYZER_SRC = "analyze_VOC_bb_FOUP_FOUP" #"analyze_VOC_broadband_custom" #"analyze_VOC_broadband"  ## listener data key
+ANALYZER_SRC = "analyze_VOC_broadband" #"analyze_VOC_bb_FOUP_FOUP" #"analyze_VOC_broadband_custom"  ## listener data key
 MFC_REFRESH_TIME = 2000  # ms
 PLOT_REFRESH_TIME = 2000  # ms
 DATA_RECEIVE_TIME = 10000  # ms

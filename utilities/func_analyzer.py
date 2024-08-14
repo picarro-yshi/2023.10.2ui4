@@ -2,6 +2,7 @@
 import socket
 from queue import Queue
 import os
+import time
 
 import CmdFIFO_py3 as CmdFIFO
 from Listener_py3 import Listener
@@ -9,6 +10,7 @@ import StringPickler_py3 as StringPickler
 
 
 def detect_analyzer_portin(self):
+    self.host = self.analyzerIPLineEdit.text()
     try:
         socket.create_connection(
             (self.host, self.port_in), 5
@@ -30,7 +32,7 @@ def detect_analyzer_portin(self):
 
 def detect_analyzer_portout(self):
     interval = 0
-
+    self.host = self.analyzerIPLineEdit.text()
     try:
         socket.create_connection((self.host, self.port_out), 5)
         dm_queue = Queue(180)  ## data manager
@@ -47,10 +49,13 @@ def detect_analyzer_portout(self):
             dm = dm_queue.get(timeout=5)
             print(i, dm["source"])
             if dm["source"] == self.analyzer_source:
-                x.append(dm["time"])
+                x.append(time.time())
             if len(x) > 1:
                 interval = int(x[-1] - x[-2])
                 self.analyzerPortOutHintLabel.setText("\u2713")
+                fn = os.path.join("par1", "analyzer_ip.txt")
+                with open(fn, "w") as f:
+                    f.write("%s" % self.host)
                 break
 
         if not x:

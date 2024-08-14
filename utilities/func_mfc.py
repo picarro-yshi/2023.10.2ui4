@@ -36,7 +36,6 @@ def set_mfc_100sccm(self, x=None):
             F2 = float(self.tab1MFC100Combobox.currentText())  # bubbler line large
         else:
             F2 = x
-
         if F2 > 100 or F2 < 0:
             self.mfcHintLabel.setText("! MFC2 value error.")
         else:

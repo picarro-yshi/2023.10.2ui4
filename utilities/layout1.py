@@ -428,7 +428,7 @@ def createTab1MFCLayout(self):
 
     self.tab1MFC100Button = QPushButton("  Set  ", self)
     self.tab1MFC100Button.setStyleSheet("font: bold")
-    self.tab1MFC100Button.clicked.connect(lambda: func_mfc.set_mfc_100sccm(self, 1))
+    self.tab1MFC100Button.clicked.connect(lambda: func_mfc.set_mfc_100sccm(self))
 
     self.tab1MFC10Label = QLabel(" ")
     self.tab1MFC10Label.setStyleSheet(style.grey1())
