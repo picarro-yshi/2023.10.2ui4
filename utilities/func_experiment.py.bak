@@ -181,6 +181,9 @@ def datakey_check(self):
                 )
             else:
                 tag = 1
+                # print(dm['data']['time'])
+                # print(dm['data'][self.datakey])
+                # print(dm['data'][lib_value])
 
             if tag:
                 if (
@@ -198,7 +201,7 @@ def datakey_check(self):
                         tag = 0
 
         if tag:
-            print("data key check passed.")
+            print("data key check passed")
             break
     return tag
 
@@ -238,6 +241,8 @@ def create_experiment(self):
             self.tab1ExperimentHint.setText(
                 " ! Error: Analyzer output port not ready.\nPlease try again"
             )
+        # else:
+        #     tag = 0
 
     # send MFC data to analyzer if not yet
     if tag:
