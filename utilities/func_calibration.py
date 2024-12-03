@@ -31,6 +31,7 @@ def load_experiment(self):
     elif not os.path.isdir(fnrp):
         self.tab1CalHintLabel.setText(" ! Error: parameters not found.")
     else:
+        self.tab1CalHintLabel.setText("")
         tag = 1
 
     if tag:
@@ -128,6 +129,7 @@ def calculation_check(self):
     elif not os.path.isdir(fnzip3):
         self.tab1CalHintLabel.setText(" ! Error: ComboResults not found.")
     else:
+        self.tab1CalHintLabel.setText("")
         tag = 1
 
     t1, t2, t3 = 0, 0, 0
@@ -281,6 +283,7 @@ def calculate(self):
             cal = round(float(f.read()), 4)
             self.tab1ExperimentHint.setText("• Calibration factor is %s" % cal)
             self.tab1ClosePlotButton.setEnabled(True)
+            self.tab1CalHintLabel.setText("")
         except:
             self.tab1CalHintLabel.setText(
                 " ! Error calculation. Please run script to diagnose."

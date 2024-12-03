@@ -838,14 +838,13 @@ def end_exp(self):
         set_MFC2_flow(self)
 
         # shut down heater if needed
-        if self.heater1Button.isEnabled() and self.heater1Button.text() == 'ON':
+        if self.heater1Checkbox.isChecked() and self.heater1Button.text() == 'ON':
             func_power.button_click(self, 1, self.heater1Button)
             print("heater 1 is turned off.")
 
-        if self.heater2Button.isEnabled() and self.heater2Button.text() == 'ON':
+        if self.heater2Checkbox.isChecked() and self.heater2Button.text() == 'ON':
             func_power.button_click(self, 2, self.heater2Button)
             print("heater 2 is turned off.")
-
 
     else:
         self.dropletRadioButton.setEnabled(True)
