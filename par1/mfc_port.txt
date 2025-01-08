@@ -1,1 +1,1 @@
-/dev/cu.usbserial-AU04P9MB
+COM6
