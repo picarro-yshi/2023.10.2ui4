@@ -829,6 +829,7 @@ def end_exp(self):
 
     # Enable, disable
     self.expEndButton.setEnabled(False)
+    self.expAddButton.setEnabled(False)
     self.tab1CreateExpButton.setEnabled(True)
     self.automationCheckbox.setDisabled(False)
 

@@ -31,11 +31,14 @@ db_path = rdisk + '/crd_G9000/AVXxx/3610-NUV1022/R&D/Calibration/Compounds.db'
 if os.path.isdir(rdisk):
     print('R drive connected.')
 else:
-    print('R drive is not connected, please connect first.')
-    exit()
+    print('R drive is not connected, please connect then re-start the GUI.')
+    # exit()
 
-con = sqlite3.connect(db_path)
-cur = con.cursor()
+try:
+    con = sqlite3.connect(db_path)
+    cur = con.cursor()
+except:
+    print("Cannot connect to Sqlite database on r-drive.")
 
 def tab4_layout(self):
     mainLayout = QHBoxLayout()
@@ -214,7 +217,7 @@ def createTab4_Layout1(self):
     gap2 = QLabel("    ")
     label_youselect = QLabel("You have selected: ")
     self.label_select = QLabel()
-    button_select = QPushButton("Calibrated this compound")
+    button_select = QPushButton("Calibrate this compound")
     button_select.clicked.connect(lambda: query_select(self))
     self.tab4HintLabel = QLabel()
     self.tab4HintLabel.setStyleSheet(style.grey1())
@@ -353,8 +356,8 @@ def getClickedCell(self, row, column):
     self.q_barcode = self.table.item(row, 5).text()
     self.q_mw = self.table.item(row, 6).text()
 
-    x = " ❚ "
-    self.label_select.setText(self.q_cid + x + self.q_name + x + self.q_cas + x + self.q_barcode)
+    x = "   ❚   "
+    self.label_select.setText(self.q_cid + x + self.q_cas + x + self.q_barcode + '\n' + self.q_name)
 
 
 def query_select(self):
